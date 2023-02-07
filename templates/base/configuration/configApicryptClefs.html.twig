@@ -1,0 +1,220 @@
+{#
+ # This file is part of MedShakeEHR.
+ #
+ # Copyright (c) 2017
+ # Bertrand Boutillier <b.boutillier@gmail.com>
+ # http://www.medshake.net
+ #
+ # MedShakeEHR is free software: you can redistribute it and/or modify
+ # it under the terms of the GNU General Public License as published by
+ # the Free Software Foundation, either version 3 of the License, or
+ # any later version.
+ #
+ # MedShakeEHR is distributed in the hope that it will be useful,
+ # but WITHOUT ANY WARRANTY; without even the implied warranty of
+ # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ # GNU General Public License for more details.
+ #
+ # You should have received a copy of the GNU General Public License
+ # along with MedShakeEHR.  If not, see <http://www.gnu.org/licenses/>.
+ #/
+
+/##
+ # Template > Config : gestion des clefs apicrypt
+ #
+ # @author Bertrand Boutillier <b.boutillier@gmail.com>
+ # @contrib fr33z00 <https://github.com/fr33z00>
+ #}
+
+{% extends "page.html.twig" %}
+{% import "macroForm.html.twig" as f %}
+{% block title %}{{ config.designAppName }} : configuration{% endblock %}
+
+{% block head %}
+{{ parent() }}
+{% endblock %}
+
+{% block jsEmbed %}
+{{ parent() }}
+$(document).ready(function() {
+  $("button.dechiffrer").on("click", function(e) {
+
+    code = window.prompt('Entrez le code LONG figurant sur le courrier Apycript');
+    if (code) {
+      source = $(this).attr('data-source');
+      destination = $(this).attr('data-destination');
+
+      $.ajax({
+        url: urlBase + '/configuration/ajax/configUncryptApicryptKey/',
+        type: 'post',
+        data: {
+          source: source,
+          destination: destination,
+          code: code
+        },
+        dataType: "json",
+        success: function(data) {
+          location.reload();
+        },
+        error: function() {
+          alert_popup("danger", 'Problème, rechargez la page !');
+        }
+      });
+    }
+    });
+});
+{% endblock %}
+
+{% block jsFiles %}
+{{ parent() }}
+<script defer src="{{ config.protocol }}{{ config.host }}{{ config.urlHostSuffixe }}/js/configuration.js?{{ modules.base }}"></script>
+{% endblock %}
+
+{% block body %}
+
+<ol class="breadcrumb">
+  <li class="breadcrumb-item">
+      <a href="{{ config.protocol }}{{ config.host }}{{ config.urlHostSuffixe }}/configuration/">Configuration</a>
+  </li>
+  <li class="breadcrumb-item">
+      <a href="{{ config.protocol }}{{ config.host }}{{ config.urlHostSuffixe }}/configuration/#cc">Paramètres courants</a>
+  </li>
+  <li class="breadcrumb-item active">
+	    Clefs Apicrypt
+  </li>
+</ol>
+
+<h1>Gestion des clefs Apicrypt</h1>
+
+
+{# Nav tabs #}
+<ul class="nav nav-tabs mt-3 mb-4" role="tablist">
+    <li role="presentation" class="nav-item">
+        <a class="nav-link{% if page.selectUser < 1 %} active{% endif %}" href="{{ config.protocol }}{{ config.host }}{{ config.urlHostSuffixe }}/configuration/apicrypt-clefs/" aria-controls="categories" role="tab">Configuration générale</a>
+    </li>
+    {% for id, user in page.apicryptClefsUsers %}
+      {% if user.paramValue is not empty %}
+      <li role="presentation" class="nav-item">
+          <a class="nav-link{% if page.selectUser == id %} active{% endif %}" href="{{ config.protocol }}{{ config.host }}{{ config.urlHostSuffixe }}/configuration/apicrypt-clefs/{{ id }}/" aria-controls="prescriptions" role="tab">{{ user.identite }}</a>
+      </li>
+      {% endif %}
+    {% endfor %}
+
+</ul>
+
+
+<h2>Répertoire</h2>
+
+
+<table class="table table-sm">
+  <thead class="thead-light">
+    <tr>
+      <th>
+        Paramètre
+      </th>
+      <th>
+        Chemin + répertoire "Clefs" final
+      </th>
+      <th>
+        Est accessible en lecture
+      </th>
+      <th>
+        Est accessible en écriture
+      </th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>apicryptCheminVersClefs</td>
+      <td>{{ page.repertoireClefs }}</td>
+      <td class="{% if page.listeClefsAutorisationLecture == 1 %}table-success{% else %}table-danger{% endif %}">&nbsp;</td>
+      <td class="{% if page.listeClefsAutorisationEcriture == 1 %}table-success{% else %}table-danger{% endif %}">&nbsp;</td>
+    </tr>
+  </tbody>
+</table>
+
+
+  <h2 class="mt-4">Clefs présentes</h2>
+
+  {% if page.listeClefsAutorisationLecture == 1 %}
+
+    {% if page.listeClefs|length < 1 %}
+      <div class="alert alert-danger" role="alert">Aucune clef Apicrypt n'est chargée pour cet utilisateur.</div>
+    {% else %}
+      <table class="table table-sm mb-0 table-hover ">
+        <thead class="thead-light">
+          <tr>
+              <th colspan="2">
+                  Fichier
+              </th>
+              <th>
+                  Chemin complet
+              </th>
+              <th>
+                Est accessible en lecture
+              </th>
+              <th>
+                Est accessible en écriture
+              </th>
+              <th class="text-right">
+                  Gérer
+              </th>
+          </tr>
+          </thead>
+          <tbody>
+          {% for k,v in page.listeClefs %}
+              <tr>
+                  <td>
+                    {{ v.file }}
+                    {% if v.fileInfo.extension == 'aes' %}
+                      <button class="btn btn-sm btn-danger ml-3 dechiffrer" data-source="{{ page.repertoireClefs }}{{ v.file }}" data-destination="{{ page.repertoireClefs }}{{ v.fileInfo.filename }}">
+                        <i class="fas fa-lock"></i> Cliquez pour déchiffrer et utiliser
+                      </button>
+                    {% endif %}
+                  </td>
+                  <td class="text-right">{{ v.filesize }}</td>
+                  <td>{{ page.repertoireClefs }}{{ v.file }}</td>
+                  <td class="{% if v.autorisationLecture == 1 %}table-success{% else %}table-danger{% endif %}">&nbsp;</td>
+                  <td class="{% if v.autorisationEcriture == 1 %}table-success{% else %}table-danger{% endif %}">&nbsp;</td>
+                  <td class="text-right">
+                    <div class="btn-group">
+                      <button class="delApicryptClef btn btn-sm btn-light" type="button" data-file="{{ v.file }}" data-user="{{ page.selectUser }}" title="Supprimer"><i class="fas fa-trash-alt"></i></a>
+                    </div>
+                  </td>
+              </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% endif %}
+
+  {% else %}
+    <div class="alert alert-danger" role="alert">Le répertoire de clefs n'est pas accessible en lecture. Les clefs ne peuvent être listées et gérées par cette interface.</div>
+  {% endif %}
+
+  <h2 class="mt-4">Ajouter des clefs</h2>
+
+  {% if page.listeClefsAutorisationEcriture == 1 %}
+
+
+      <div id="dropZoneFichierZoneConfig"  data-destination="{{ page.repertoireClefs }}" class="col-md-9 bg-warning center-block" style="padding : 30px; border-radius : 6px">
+          Déposez ici le fichier de clef ou sélectionnez-le avec le bouton ci-dessous<br/>
+          <input type="file" name="files[]" multiple="multiple" title="Cliquer pour ajouter">
+
+
+          <div class="progress" style="margin-top : 20px;">
+            <div class="progress-bar" role="progressbar" style="width: 00%;">
+              <span class="sr-only"></span>
+            </div>
+          </div>
+      </div>
+
+
+  {% else %}
+    <div class="alert alert-danger" role="alert">Le répertoire de clefs n'est pas accessible en écriture. Les clefs ne peuvent être ajoutées via cette interface.</div>
+  {% endif %}
+
+
+
+
+
+{% endblock %}

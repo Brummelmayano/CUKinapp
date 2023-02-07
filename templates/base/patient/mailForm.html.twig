@@ -1,0 +1,121 @@
+{#
+ # This file is part of MedShakeEHR.
+ #
+ # Copyright (c) 2017
+ # Bertrand Boutillier <b.boutillier@gmail.com>
+ # http://www.medshake.net
+ #
+ # MedShakeEHR is free software: you can redistribute it and/or modify
+ # it under the terms of the GNU General Public License as published by
+ # the Free Software Foundation, either version 3 of the License, or
+ # any later version.
+ #
+ # MedShakeEHR is distributed in the hope that it will be useful,
+ # but WITHOUT ANY WARRANTY; without even the implied warranty of
+ # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ # GNU General Public License for more details.
+ #
+ # You should have received a copy of the GNU General Public License
+ # along with MedShakeEHR.  If not, see <http://www.gnu.org/licenses/>.
+ #/
+
+/##
+ # Template > patient : formulaire d'envoi de mail
+ #
+ # @author Bertrand Boutillier <b.boutillier@gmail.com>
+ # @contrib fr33z00 <https://github.com/fr33z00>
+ #}
+
+{% import "macroForm.html.twig" as f %}
+{# Formulaire de synthèse #}
+<div class="jumbotron col-md-12">
+    <button id="cleanNewMail" type="button" class="close" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+    </button>
+
+    {% if page.form.addHidden.mailType == 'ns' %}
+        <h3>Envoyer par mail non sécurisé</h3>
+    {% elseif page.form.addHidden.mailType == 'apicrypt' %}
+        <h3>Envoyer par mail Apicrypt</h3>
+    {% elseif page.form.addHidden.mailType == 'ecofax' %}
+        <h3>Envoyer par fax</h3>
+    {% endif %}
+
+    {% if page.doc %}
+
+    {% if page.correspondants is not empty %}
+      <div class="d-inline mt-3">
+        {% if page.form.addHidden.mailType == 'ns' %}
+
+        {% elseif page.form.addHidden.mailType == 'apicrypt' %}
+          Correspondants du patient possédant une adresse mail sécurisée : <br>
+          {% for v in page.correspondants %}
+            <button class="btn btn-outline-secondary btn-sm copyValueTo" role="button" title="{{ v.typeRelationTxt|e('html_attr') }}" data-copyval="{{ v.emailApicrypt }}" data-copyvalto="#id_mailToApicrypt_id">
+              {% if v.titre %}{{ v.titre }} {% endif %}{{ v.identiteUsuelle }}
+              {% if v.typeRelation == 'MTD' %}<sup><i class="fas fa-star fa-sm"></i></sup>{% endif %}
+            </button>
+          {% endfor %}
+        {% elseif page.form.addHidden.mailType == 'ecofax' %}
+          Correspondants du patient possédant un fax : <br>
+          {% for v in page.correspondants %}
+            <button class="btn btn-outline-secondary btn-sm copyValueTo" role="button" title="{{ v.typeRelationTxt|e('html_attr') }}" data-copylab="{% if v.titre %}{{ v.titre|e('html_attr') }} {% endif %}{{ v.identiteUsuelle|e('html_attr') }}" data-copylabto="#id_mailToEcofaxName_id" data-copyval="{{ v.faxPro }}" data-copyvalto="#id_mailToEcofaxNumber_id">
+              {% if v.titre %}{{ v.titre }} {% endif %}{{ v.identiteUsuelle }}
+              {% if v.typeRelation == 'MTD' %}<sup><i class="fas fa-star fa-sm"></i></sup>{% endif %}
+            </button>
+          {% endfor %}
+        {% endif %}
+
+      </div>
+    {% endif %}
+
+      <div class="row mt-4">
+        <div class="col-5">
+          {{ f.formbuilder(page.form , page.formIN ) }}
+        </div>
+
+        <div class="col-7">
+          <div class="row mb-2">
+            <div class="col">
+              Document à expédier :
+              {{ page.doc.label|e }}
+              {{ page.doc.titre|e }}
+              <small>(Taille :
+                {{ page.doc.filesize|e }})</small>
+            </div>
+            <div class="col-auto text-right">
+              <a class="btn btn-secondary btn-sm" role="button" href="{{ config.protocol }}{{ config.host }}{{ config.urlHostSuffixe }}/{{ page.doc.url }}" target="_blank" title="Voir">
+                <i class="fas fa-external-link-alt"></i>
+                Voir
+              </a>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col">
+              {% if page.doc.mimetype in ['application/zip'] %}
+                <div class="text-center text-muted">
+                  <i class="far fa-file-archive fa-7x my-4"></i><br>
+                  Fichier zip - aperçu non disponible
+                </div>
+              {% elseif page.doc.mimetypeParts[0] == 'image' %}
+                <img src="{{ config.protocol }}{{ config.host }}{{ config.urlHostSuffixe }}/{{ page.doc.url }}?t={{ "now"|date('U') }}" alt="" style="border: 15px solid #DDD; max-width: 100%; height: auto;">
+              {% else %}
+                <object data="{{ config.protocol }}{{ config.host }}{{ config.urlHostSuffixe }}/{{ page.doc.url }}" type="{{ page.doc.mimetype }}" width="100%" height="900px" style="border: 15px solid #DDD"></object>
+              {% endif %}
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    {% else %}
+      {{ f.formbuilder(page.form , page.formIN ) }}
+    {% endif %}
+
+    {% if page.formJavascript is not empty %}
+      <script>
+       {{ page.formJavascript }}
+      </script>
+    {% endif %}
+
+</div>

@@ -1,0 +1,129 @@
+{#
+ # This file is part of MedShakeEHR.
+ #
+ # Copyright (c) 2017
+ # fr33z00 <https://github.com/fr33z00>
+ # http://www.medshake.net
+ #
+ # MedShakeEHR is free software: you can redistribute it and/or modify
+ # it under the terms of the GNU General Public License as published by
+ # the Free Software Foundation, either version 3 of the License, or
+ # any later version.
+ #
+ # MedShakeEHR is distributed in the hope that it will be useful,
+ # but WITHOUT ANY WARRANTY; without even the implied warranty of
+ # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ # GNU General Public License for more details.
+ #
+ # You should have received a copy of the GNU General Public License
+ # along with MedShakeEHR.  If not, see <http://www.gnu.org/licenses/>.
+ #/
+
+/##
+ # Template > Config : paramètres de configuration s'appliquant par défaut à tous les utilisateurs
+ #
+ # @author fr33z00 <https://github.com/fr33z00>
+ # @contrib Bertrand Boutillier <b.boutillier@gmail.com>
+ #}
+
+{% extends "page.html.twig" %}
+{% import "macroForm.html.twig" as f %}
+{% block title %}{{ config.designAppName }} : configuration{% endblock %}
+
+{% block head %}
+  {{ parent() }}
+  <script defer src="{{ config.protocol }}{{ config.host }}{{ config.urlHostSuffixe }}/js/configuration.js?{{ modules.base }}"></script>
+{% endblock %}
+
+{% block body %}
+
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item">
+        <a href="{{ config.protocol }}{{ config.host }}{{ config.urlHostSuffixe }}/configuration/">Configuration</a>
+    </li>
+    <li class="breadcrumb-item">
+        <a href="{{ config.protocol }}{{ config.host }}{{ config.urlHostSuffixe }}/configuration/#cc">Paramètres courants</a>
+    </li>
+    <li class="breadcrumb-item active">Paramètres globaux</li>
+  </ol>
+
+  <h1>Paramètres globaux</h1>
+
+  <form class="ajaxForm" method="post" action="{{ config.protocol }}{{ config.host }}{{ config.urlHostSuffixe }}/configuration/ajax/configDefaultUsersParams/">
+    <div class="row mt-3">
+      {# navigation #}
+      <div class="col-md-2">
+        <ul class="nav nav-pills flex-column">
+          {% for cat in page.cats %}
+            <li class="nav-item">
+              <a class="nav-link{% if loop.first %} active{% endif %}" href="#{{ cat|replace({' ':'_', '\'':'_'}) }}" aria-controls="{{ cat }}" role="tab" data-toggle="tab" onclick="$('.cats').hide();$('.{{ cat|replace({' ':'_', '\'':'_'}) }}').show();">{{ cat }}</a>
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+      <div class="tab-content col-md-10" >
+        {% for cat in page.cats %}
+          <div id="{{ cat|replace({' ':'_', '\'':'_'}) }}" role="tabpanel" class="tab-pane{% if loop.first %} active{% endif %}">
+          </div>
+        {% endfor %}
+        <table class="table table-sm mb-0 table-hover table-striped checkboxFixValue">
+          <thead class="thead-light">
+            <tr>
+              <th>Paramètre</th>
+              <th>Valeur</th>
+              <th>Type</th>
+              <th>Description/commentaire</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for param in page.params %}
+              <tr class="cats {{ param.cat|replace({' ':'_', '\'':'_'}) }}"{% if param.cat != (page.cats|first) %} style="display:none"{% endif %}>
+                <td>{{ param.name }}</td>
+                <td {% if param.type is same as('true/false') %}class="text-center checkboxFixValue"{% endif %}>
+                  {% if param.type == 'textarea' %}
+                    {{ f.textarea ({
+                      'textarea' : {
+                        'name' : param.name,
+                        'id' : param.name ~ 'ID',
+                        'class' : 'form-control form-control-sm h-100',
+                        'value' : param.value,
+                        'autocomplete' : 'off',
+                        'rows' : 4,
+                        'readonly' : param.readonly|default('')
+                      }
+                    }) }}
+                  {% else %}
+                    {{ f.input ({
+                      'input' : {
+                        'type' : param.type is same as('true/false') ? 'checkbox' : ('password' in (param.name|lower) ? 'password' : 'text'),
+                        'name' : param.name,
+                        'id' : param.name ~ 'ID',
+                        'class' : 'form-control form-control-sm',
+                        'value' : param.value,
+                        'plus' : 'password' in (param.name|lower) ? '<i class="fas fa-eye viewPassword"></i>' : '',
+                        'autocomplete' : 'off',
+                        'readonly' : param.readonly|default('')
+                      }
+                    }) }}
+                  {% endif %}
+
+                </td>
+                <td class="text-muted small">{{ param.type }}</td>
+                <td class="text-muted small">{{ param.description|default('') }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {{ f.input ({
+          'input' : {
+            'type' : 'submit',
+            'value' : 'Enregistrer',
+            'class' : 'btn btn-primary mt-2'
+          }
+        }) }}
+      </div>
+    </div>
+
+  </form>
+
+{% endblock %}

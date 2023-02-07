@@ -1,0 +1,240 @@
+{#
+ # This file is part of MedShakeEHR.
+ #
+ # Copyright (c) 2017
+ # Bertrand Boutillier <b.boutillier@gmail.com>
+ # http://www.medshake.net
+ #
+ # MedShakeEHR is free software: you can redistribute it and/or modify
+ # it under the terms of the GNU General Public License as published by
+ # the Free Software Foundation, either version 3 of the License, or
+ # any later version.
+ #
+ # MedShakeEHR is distributed in the hope that it will be useful,
+ # but WITHOUT ANY WARRANTY; without even the implied warranty of
+ # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ # GNU General Public License for more details.
+ #
+ # You should have received a copy of the GNU General Public License
+ # along with MedShakeEHR.  If not, see <http://www.gnu.org/licenses/>.
+ #/
+
+/##
+ # Template > Config : catégories des modèles de données
+ #
+ # @author Bertrand Boutillier <b.boutillier@gmail.com>
+ # @contrib fr33z00 <https://github.com/fr33z00>
+ #}
+
+{% extends "page.html.twig" %}
+{% import "macroForm.html.twig" as f %}
+{% block title %}{{ config.designAppName }} : configuration{% endblock %}
+
+{% block head %}
+{{ parent() }}
+<script defer src="{{ config.protocol }}{{ config.host }}{{ config.urlHostSuffixe }}/js/configuration.js?{{ modules.base }}"></script>
+{% endblock %}
+
+{% block body %}
+<ol class="breadcrumb">
+  <li class="breadcrumb-item">
+      <a href="{{ config.protocol }}{{ config.host }}{{ config.urlHostSuffixe }}/configuration/">Configuration</a>
+  </li>
+  <li class="breadcrumb-item">
+      {% if page.groupe == "courrier" %}
+        <a href="{{ config.protocol }}{{ config.host }}{{ config.urlHostSuffixe }}/configuration/#cc">Paramètres courants</a>
+      {% else %}
+        <a href="{{ config.protocol }}{{ config.host }}{{ config.urlHostSuffixe }}/configuration/#ca">Paramètres avancés</a>
+      {% endif %}
+  </li>
+  <li class="breadcrumb-item active">
+    {% if page.groupe == "admin" %}
+      Administratives
+    {% elseif page.groupe == "medical" %}
+      Médicales
+    {% elseif page.groupe == "typecs" %}
+      Consultations
+    {% elseif page.groupe == "courrier" %}
+      Courriers et certificats
+      {% set valeurParDefaut='Courrier : nom du template associé / Mail : texte par défaut' %}
+    {% elseif page.groupe == "mail" %}
+      Mail
+    {% elseif page.groupe == "doc" %}
+      Documents importés
+    {% elseif page.groupe == "ordo" %}
+      Ordonnances
+    {% elseif page.groupe == "reglement" %}
+      Règlements
+    {% elseif page.groupe == "dicom" %}
+      Dicom
+    {% elseif page.groupe == "user" %}
+      Utilisateurs
+    {% elseif page.groupe == "relation" %}
+      Relations
+    {% endif %}
+  </li>
+</ol>
+
+{% if page.groupe == "admin" %}
+	<h1>Catégories des données administratives</h1>
+{% elseif page.groupe == "medical" %}
+	<h1>Catégories des données médicales</h1>
+{% elseif page.groupe == "typecs" %}
+	<h1>Catégories des données de consultations</h1>
+{% elseif page.groupe == "courrier" %}
+	<h1>Catégories des données de courrier</h1>
+{% elseif page.groupe == "mail" %}
+	<h1>Catégories des données de mail</h1>
+{% elseif page.groupe == "doc" %}
+	<h1>Catégories des données de documents</h1>
+{% elseif page.groupe == "ordo" %}
+	<h1>Catégories des données d'ordonnances</h1>
+{% elseif page.groupe == "reglement" %}
+	<h1>Catégories des données de règlements</h1>
+{% elseif page.groupe == "reglement" %}
+	<h1>Catégories des données Dicom</h1>
+{% elseif page.groupe == "user" %}
+	<h1>Catégories des données utilisateurs</h1>
+{% elseif page.groupe == "relation" %}
+	<h1>Catégories des données de relations</h1>
+{% endif %}
+
+{# Nav tabs #}
+<ul class="nav nav-tabs mt-3" role="tablist">
+	<li role="presentation" class="nav-item"><a class="nav-link active" href="{{ config.protocol }}{{ config.host }}{{ config.urlHostSuffixe }}/configuration/data-cat/{{ page.groupe }}/" aria-controls="categories" role="tab">Catégories</a></li>
+	<li role="presentation" class="nav-item"><a class="nav-link" href="{{ config.protocol }}{{ config.host }}{{ config.urlHostSuffixe }}/configuration/data-type/{{ page.groupe }}/" aria-controls="types" role="tab" >Types</a></li>
+</ul>
+
+{# Tab panes #}
+<div class="tab-content">
+
+	{# categories tab #}
+	<div role="tabpanel" class="tab-pane active" id="categories">
+
+    <div class="row my-3">
+      <div class="col text-right">
+        <button type="button" class="btn btn-primary reset-modal" data-toggle="modal" data-target="#modalNewCat">
+          <i class="fas fa-plus"></i> Nouvelle catégorie
+        </button>
+      </div>
+    </div>
+
+		<table class="table table-sm mb-0 table-hover ">
+		<thead class="thead-light">
+		<tr>
+			<th>#</th>
+			<th>Label</th>
+			<th>Enfants</th>
+			<th>Description</th>
+			<th></th>
+		</tr>
+		</thead><tbody>
+		{% for k,v in page.tabCat %}
+		<tr>
+			<td>{{ k }}</td>
+			<td>{{ v.label }}</td>
+			<td>
+        {% if v.enfants > 0 %}
+        <div class="btn-group">
+          <a class="btn btn-light btn-sm" role="button" href="{{ config.protocol }}{{ config.host }}{{ config.urlHostSuffixe }}/configuration/data-type/{{ v.groupe }}/{{ k }}/">
+              <span class="fas fa-search-plus" aria-hidden="true"></span>
+            </a>
+          </div>
+          {{ v.enfants }}
+        {% endif %}
+      </td>
+			<td>{{ v.description }}</td>
+			<td class="text-right">
+        <div class="btn-group">
+				  <button type="button" class="btn btn-light btn-sm edit-by-prim-key" aria-label="Editer" data-id="{{ k }}" data-table="data_cat" data-form="formModalNewCat" data-modal="modalNewCat">
+				  <span class="fas fa-pencil-alt" aria-hidden="true"></span>
+				  </button>
+
+				  <button type="button" class="btn btn-light btn-sm delete-by-prim-key" aria-label="Supprimer" {% if v.enfants > 0 or v.module=="base" %}disabled{% endif %} data-id="{{ k }}" data-table="data_cat">
+				  <span class="fas fa-times" aria-hidden="true"></span>
+				  </button>
+        </div>
+			</td>
+		</tr>
+		{% endfor %}
+		</tbody>
+		</table>
+
+	</div>
+
+</div>
+{% endblock %}
+
+{% block modals %}
+{# modal new category #}
+<div class="modal fade" id="modalNewCat" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title font-weight-bold" id="myModalLabel">Création / édition catégorie</h4>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span></button>
+      </div>
+      <div class="modal-body">
+
+        {{ f.errorsBloc() }}
+
+        <form id="formModalNewCat" action="{{ config.protocol }}{{ config.host }}{{ config.urlHostSuffixe }}/configuration/ajax/configDataCatCreate/" data-groupe="{{ page.groupe }}">
+          <div class="form-group">
+            {{ f.input ({
+					'input' : {
+						'type' : 'text',
+						'name' : 'name',
+						'placeholder' : 'nom à usage interne, pas d\'espace, pas d\'accent',
+						'class' : 'form-control',
+						'autocomplete' : 'off'
+					},
+					'label' : {
+						'position' : 'before',
+						'label' : 'Nom à usage interne',
+					}
+				}) }}
+          </div>
+
+          <div class="form-group">
+            {{ f.input ({
+					'input' : {
+						'type' : 'text',
+						'name' : 'label',
+						'placeholder' : 'nom principal',
+						'class' : 'form-control',
+						'autocomplete' : 'off'
+					},
+					'label' : {
+						'position' : 'before',
+						'label' : 'Label',
+					}
+				}) }}
+          </div>
+
+          <div class="form-group">
+            {{ f.input ({
+					'input' : {
+						'type' : 'text',
+						'name' : 'description',
+						'placeholder' : 'description',
+						'class' : 'form-control',
+						'autocomplete' : 'off'
+					},
+					'label' : {
+						'position' : 'before',
+						'label' : 'Description',
+					}
+				}) }}
+          </div>
+        </form>
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-light" data-dismiss="modal">Abandonner</button>
+        <button type="button" class="btn btn-primary modal-save" data-form="formModalNewCat" data-modal="modalNewCat">Sauvegarder</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

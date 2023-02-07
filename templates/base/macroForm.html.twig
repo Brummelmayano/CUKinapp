@@ -1,0 +1,793 @@
+{#
+ # This file is part of MedShakeEHR.
+ #
+ # Copyright (c) 2017
+ # Bertrand Boutillier <b.boutillier@gmail.com>
+ # http://www.medshake.net
+ #
+ # MedShakeEHR is free software: you can redistribute it and/or modify
+ # it under the terms of the GNU General Public License as published by
+ # the Free Software Foundation, either version 3 of the License, or
+ # any later version.
+ #
+ # MedShakeEHR is distributed in the hope that it will be useful,
+ # but WITHOUT ANY WARRANTY; without even the implied warranty of
+ # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ # GNU General Public License for more details.
+ #
+ # You should have received a copy of the GNU General Public License
+ # along with MedShakeEHR.  If not, see <http://www.gnu.org/licenses/>.
+ #/
+
+/##
+ # Template > macro de construction des formulaires
+ #
+ # @author Bertrand Boutillier <b.boutillier@gmail.com>
+ # @contrib fr33z00 <https://github.com/fr33z00>
+ #}
+
+{# input #}
+{% macro input(v) %}
+
+	{% if v.input.type in ['checkbox', 'switch'] %}
+
+			{% if v.input.before is not empty %}
+				{{ v.input.before }}
+			{% endif %}
+
+	    <div class="custom-control custom-{{ v.input.type }}">
+	      <input
+					type="checkbox"
+					class="custom-control-input {{ v.input.class|trim }}"
+
+					id="{{ v.input.id }}"
+					{% if v.input.value  == "true" %} checked="checked" {% endif %}
+					{% if v.input.value != 'noPreValue' %}
+						value="{{ v.input.value|e('html_attr') }}"
+					{% elseif v.input.value == 'noPreValue' and  v.input.defaut != '' %}
+						value="{{ v.input.defaut|e('html_attr') }}"
+					{% endif %}
+					title="{{ v.input.internalName }} / {{ v.input.datatypeid }}"
+					{% if v.input.name %}
+						name="{{ v.input.name }}"
+					{% endif %}
+					autocomplete="off"
+					{% if v.input.disabled %} disabled {% endif %}
+					{% if v.input.readonly %} readonly {% endif %}
+					{% if v.input.tabindex is not empty %} tabindex="{{ v.input.tabindex }}" {% endif %}
+					{% if v.input.required == 'required' %} required {% endif %}
+					{% if v.input.datatypeid %} data-typeid="{{ v.input.datatypeid }}" {% endif %}
+					{% if v.input.internalName %} data-internalName="{{ v.input.internalName }}" {% endif %}
+					{{ v.input.add }} >
+	      <label class="custom-control-label {{ v.label.class }}" for="{{ v.input.id }}" title="{{ v.input.name }}">{{ v.label.label|e }}</label>
+	    </div>
+
+			{% if v.input.after %}
+				{{ v.input.after }}
+			{% endif %}
+
+	{% elseif v.input.type == 'submit' %}
+
+			{% if v.input.before is not empty %}
+				{{ v.input.before }}
+			{% endif %}
+
+			<input type="{{ v.input.type }}" class="btn {{ v.input.class }}" value="{{ v.input.value|e('html_attr') }}" {% if v.input.disabled %} disabled {% endif %} {% if v.input.tabindex is not empty %} tabindex="{{ v.input.tabindex }}" {% endif %} />
+
+			{% if v.input.after %}
+				{{ v.input.after }}
+			{% endif %}
+
+	{% else %}
+
+		{# si un label existe #}
+		{% if v.label.label != '' %}
+			<label
+			{% if v.label.class %} class="{{ v.label.class }}" {% endif %}
+			{% if v.input.id %} for="{{ v.input.id }}" {% endif %}
+			>{{ v.label.label|e }}
+			</label>
+		{% endif %}
+
+		{# insertion avant le input #}
+	  {% if v.input.before %}
+	  	{{ v.input.before }}
+			{% if v.input.plusg %}
+        <div class="input-group-prepend">
+  				<span class="input-group-text" id="{{v.input.id}}AddOnG">{{ v.input.plusg }}</span>
+        </div>
+			{% endif %}
+		{% elseif v.input.plus or v.input.plusg %}
+			<div class="input-group input-group-sm mx-0">
+				{% if v.input.plusg %}
+          <div class="input-group-prepend">
+  					<span class="input-group-text" id="{{v.input.id}}AddOnG">{{ v.input.plusg }}</span>
+          </div>
+				{% endif %}
+
+		{% endif %}
+
+		{# input #}
+    <input type="{{ v.input.type }}"
+		{% if v.input.type != "hidden" %} title="{{ v.input.internalName }} / {{ v.input.datatypeid }}"{% endif %}
+		{% if v.input.id %} id="{{ v.input.id }}" {% endif %}
+		{% if v.input.name %} name="{{ v.input.name }}" {% endif %}
+    {% if v.input.value != 'noPreValue' %} value="{{ v.input.value|e('html_attr') }}"
+		{% elseif v.input.value == 'noPreValue' and  v.input.defaut != '' %} value="{{ v.input.defaut|e('html_attr') }}"
+		{% endif %}
+    {% if v.input.placeholder %} placeholder="{{ v.input.placeholder|e('html_attr') }}" {% endif %}
+		class="form-control {{ v.input.class }}{% if v.input.error %} inputErreur{% endif %}"
+    {% if v.input.min or v.input.min == '0' %} min="{{ v.input.min }}" {% endif %}
+    {% if v.input.max or v.input.max == '0' %} max="{{ v.input.max }}" {% endif %}
+    {% if v.input.step or v.input.step == '0' %} step="{{ v.input.step }}" {% endif %}
+    {% if v.input.pattern %} pattern="{{ v.input.pattern }}" {% endif %}
+    {% if v.input.autocomplete %} autocomplete="{{ v.input.autocomplete }}" {% endif %}
+		{% if v.input.dataAcTypeID %} {{ v.input.dataAcTypeID }} {% endif %}
+		{% if v.input.disabled %} disabled {% endif %}
+		{% if v.input.readonly %} readonly {% endif %}
+    {% if v.input.required == 'required' %} required {% endif %}
+		{% if v.input.tabindex is not empty %} tabindex="{{ v.input.tabindex }}" {% endif %}
+		{% if v.input.maxlength is not empty %} maxlength="{{ v.input.maxlength }}" {% endif %}
+    {% if v.input.datatypeid %} data-typeid="{{ v.input.datatypeid }}" {% endif %}
+		{% if v.input.internalName %} data-internalName="{{ v.input.internalName }}" {% endif %}
+		{{ v.input.add }} />
+
+		{# insertion après le input #}
+    {% if v.input.after %}
+    	{{ v.input.after }}
+		{% elseif v.input.plus %}
+      <div class="input-group-append">
+  			<span class="input-group-text" id="{{v.input.id}}AddOn">{{ v.input.plus }}</span>
+      </div>
+		{% endif %}
+
+		{% if v.input.before %}
+		{% elseif v.input.plus or v.input.plusg %}
+			</div>
+		{% endif %}
+
+		{% if v.label.helpTxt is not empty %}
+			<small {% if v.input.id %} id="{{ v.input.id }}HelpTxt"{% endif %} class="form-text text-muted">
+				{{ v.label.helpTxt }}
+			</small>
+		{% endif %}
+
+	{% endif %}
+{% endmacro %}
+
+{# hidden #}
+{% macro hidden(v) %}
+		<input type="{{ v.hidden.type }}"
+		{% if v.hidden.id %} id="{{ v.hidden.id }}" {% endif %}
+		{% if v.hidden.name %} name="{{ v.hidden.name }}" {% endif %}
+		{% if v.hidden.value != 'noPreValue' %} value="{{ v.hidden.value|e('html_attr') }}"
+		{% elseif v.hidden.value == 'noPreValue' and  v.hidden.defaut != '' %} value="{{ v.hidden.defaut|e('html_attr') }}"
+		{% endif %}
+		{% if v.hidden.autocomplete %} autocomplete="{{ v.hidden.autocomplete }}" {% endif %}
+		{% if v.hidden.dataAcTypeID %} {{ v.hidden.dataAcTypeID }} {% endif %}
+		{% if v.hidden.datatypeid %} data-typeid="{{ v.hidden.datatypeid }}" {% endif %}
+		{% if v.hidden.internalName %} data-internalName="{{ v.hidden.internalName }}" {% endif %}
+		{# Pas de sens du placeholder sur un hidden mais utilisé par module chiro #}
+		{% if v.hidden.placeholder %} placeholder="{{ v.hidden.placeholder|e('html_attr') }}" {% endif %}
+		{{ v.hidden.add }} />
+{% endmacro %}
+
+{# select #}
+{% macro select(v) %}
+
+	{# si un label existe #}
+	{% if v.label.label != '' %}
+		<label
+		{% if v.label.class %} class="{{ v.label.class }}" {% endif %}
+		{% if v.select.id %} for="{{ v.select.id }}" {% endif %}
+		>{{ v.label.label|e }}
+		</label>
+	{% endif %}
+
+	{# insertion avant le select #}
+	{% if v.select.before %}
+		{{ v.select.before }}
+		{% if v.select.plusg %}
+			<div class="input-group-prepend">
+				<span class="input-group-text" id="{{v.select.id}}AddOnG">{{ v.select.plusg }}</span>
+			</div>
+		{% endif %}
+	{% elseif v.select.plus or v.select.plusg %}
+		<div class="input-group input-group-sm mx-0">
+			{% if v.select.plusg %}
+				<div class="input-group-prepend">
+					<span class="input-group-text" id="{{v.select.id}}AddOnG">{{ v.select.plusg }}</span>
+				</div>
+			{% endif %}
+	{% endif %}
+
+	<select title="{{ v.select.internalName }} / {{ v.select.datatypeid }}"
+	class="custom-select{% if v.select.class %} {{ v.select.class }}{% if v.select.error %} inputErreur{% endif %}{% endif %}"
+	{% if v.select.id %} id="{{ v.select.id }}" {% endif %}
+	{% if v.select.name %} name="{{ v.select.name }}" {% endif %}
+	{% if v.select.datatypeid %} data-typeid="{{ v.select.datatypeid }}" {% endif %}
+	{% if v.select.autocomplete %} autocomplete="{{ v.select.autocomplete }}" {% endif %}
+	{% if v.select.disabled %} disabled="{{ v.select.disabled }}" {% endif %}
+	{% if v.select.required %} required="{{ v.select.required }}" {% endif %}
+	{% if v.select.internalName %} data-internalName="{{ v.select.internalName }}" {% endif %}
+	{{ v.select.add }}
+	{% if v.select.valueDefaut is not iterable %}data-defautValue="{{ v.select.valueDefaut|e('html_attr') }}"{% endif %}
+	{% if v.select.tabindex is not empty %} tabindex="{{ v.select.tabindex }}" {% endif %}
+	>
+
+        {% if v.select.placeholder is not empty and v.select.valueDefaut == "noPreValue" %}
+            <option value="" disabled hidden selected>{{ v.select.placeholder|e }}</option>
+        {% endif %}
+
+        {% if v.select.valueDefaut is iterable %}
+		{% for key,value in v.select.valueDefaut %}
+			<option value="{{ key|e('html_attr') }}">{{ value|e }}</option>
+		{% endfor %}
+	{% else %}
+		{% for key,value in v.select.values %}
+			<option
+			{% if v.select.valueDefaut == key %} selected="selected" {% endif %}
+			value="{{ key|e('html_attr') }}">{{ value|e }}
+			</option>
+		{% endfor %}
+	{% endif %}
+
+	</select>
+
+	{% if v.select.plus %}
+		<div class="input-group-append">
+			<span class="input-group-text" id="{{v.select.id}}AddOn">{{ v.select.plus }}</span>
+		</div>
+	{% endif %}
+	{% if v.select.plus or v.select.plusg %}
+		</div>
+	{% endif %}
+
+	{% if v.select.after %}
+		{{ v.select.after }}
+	{% endif %}
+
+	{% if v.label.helpTxt is not empty %}
+		<small {% if v.select.id %} id="{{ v.select.id }}HelpTxt"{% endif %} class="form-text text-muted">
+			{{ v.label.helpTxt }}
+		</small>
+	{% endif %}
+
+{% endmacro %}
+
+
+{# radio #}
+{% macro radio(v) %}
+	<div id="{{ v.radio.id }}">
+	{% if 'notInline' in v.radio.class %}
+
+		{# si un label existe #}
+		{% if v.label.label != '' %}
+			<div class="{% if v.label.class %}{{ v.label.class }}{% endif %}"
+			{% if v.radio.id %} for="{{ v.radio.id }}" {% endif %}>{{ v.label.label|e }}
+			</div>
+		{% endif %}
+
+		{% for key,value in v.radio.values %}
+			<div class="custom-control custom-radio">
+				<input type="radio" id="{{ v.radio.id }}{{ loop.index }}" name="{{ v.radio.name }}" value="{{ key|e('html_attr') }}" class="custom-control-input"
+                        {% if v.radio.disabled %} disabled="{{ v.radio.disabled }}" {% endif %}
+                        {% if v.radio.required %} required="{{ v.radio.required }}" {% endif %}
+                        {% if v.radio.valueDefaut == key %} checked="checked" {% endif %} autocomplete="off"
+                        {% if v.radio.tabindex is not empty %} tabindex="{{ v.radio.tabindex }}" {% endif %}>
+				<label class="custom-control-label" for="{{ v.radio.id }}{{ loop.index }}">{{ value|e }}</label>
+			</div>
+		{% endfor %}
+
+
+	{% else %}
+		{% if v.label.label != '' and 'brAfter' in v.label.class %}
+			<div class="mb-1 {% if v.label.class %}{{ v.label.class }}{% endif %}"
+			{% if v.radio.id %} for="{{ v.radio.id }}" {% endif %}>{{ v.label.label|e }}
+			</div>
+		{% endif %}
+		<div class="d-flex flex-wrap">
+		{# si un label existe #}
+		{% if v.label.label != '' and 'brAfter' not in v.label.class %}
+		  <div class="flex-grow-1 {% if v.label.class %}{{ v.label.class }}{% endif %} mr-2"
+			{% if v.radio.id %} for="{{ v.radio.id }}" {% endif %}>{{ v.label.label|e }}
+		  </div>
+		{% endif %}
+
+		{% for key,value in v.radio.values %}
+			<div class="custom-control custom-radio custom-control-inline">
+			  <input type="radio" id="{{ v.radio.id }}{{ loop.index }}" name="{{ v.radio.name }}" value="{{ key|e('html_attr') }}" class="custom-control-input"
+                      {% if v.radio.disabled %} disabled="{{ v.radio.disabled }}" {% endif %}
+                      {% if v.radio.required %} required="{{ v.radio.required }}" {% endif %}
+                      {% if v.radio.valueDefaut == key %} checked="checked" {% endif %} autocomplete="off"
+                      {% if v.radio.tabindex is not empty %} tabindex="{{ v.radio.tabindex }}" {% endif %}>
+			  <label class="custom-control-label" for="{{ v.radio.id }}{{ loop.index }}">{{ value|e }}</label>
+			</div>
+		{% endfor %}
+		</div>
+	{% endif %}
+	</div>
+{% endmacro %}
+
+
+{# selectMultiple #}
+{% macro selectMultiple(v) %}
+
+	{# si un label existe #}
+	{% if v.label.label != '' %}
+		<label
+		{% if v.label.class %} class="{{ v.label.class }}" {% endif %}
+		{% if v.select.id %} for="{{ v.select.id }}" {% endif %}
+		>{{ v.label.label|e }}
+		</label>
+	{% endif %}
+
+	{% if v.select.before %}
+		{{ v.select.before }}
+	{% endif %}
+
+  <input type="hidden" name="{{ v.select.name }}[]" value="" />
+	<select title="{{ v.select.internalName }} / {{ v.select.datatypeid }}"
+	{% if v.select.class %} class="{{ v.select.class }}{% if v.select.error %} inputErreur{% endif %}" {% endif %}
+	{% if v.select.id %} id="{{ v.select.id }}" {% endif %}
+	{% if v.select.name %} name="{{ v.select.name }}[]" {% endif %}
+	{% if v.select.datatypeid %} data-typeid="{{ v.select.datatypeid }}" {% endif %}
+	{% if v.select.autocomplete %} autocomplete="{{ v.select.autocomplete }}" {% endif %}
+	{% if v.select.disabled %} disabled="{{ v.select.disabled }}" {% endif %}
+	{% if v.select.internalName %} data-internalName="{{ v.select.internalName }}" {% endif %}
+	{{ v.select.add }}
+	{% if v.select.tabindex is not empty %} tabindex="{{ v.select.tabindex }}" {% endif %}
+	multiple>
+	{% for key,value in v.select.values %}
+		<option
+		{% if key in v.select.valueDefaut %} selected="selected" {% endif %}
+		value="{{ key|e('html_attr') }}">{{ value|e }}
+		</option>
+	{% endfor %}
+	</select>
+
+	{% if v.select.after %}
+		{{ v.select.after }}
+	{% endif %}
+
+	{% if v.label.helpTxt is not empty %}
+		<small {% if v.select.id %} id="{{ v.select.id }}HelpTxt"{% endif %} class="form-text text-muted">
+			{{ v.label.helpTxt }}
+		</small>
+	{% endif %}
+
+{% endmacro %}
+
+
+{# select avec optgroup #}
+{% macro selectOptgroup(v) %}
+
+	{# si un label existe #}
+	{% if v.label.label != '' %}
+			<label
+			{% if v.label.class %} class="{{ v.label.class }}" {% endif %}
+			{% if v.select.id %} for="{{ v.select.id }}" {% endif %}
+			>{{ v.label.label|e }}
+			</label>
+	{% endif %}
+
+	{% if v.select.before %}
+		{{ v.select.before }}
+	{% endif %}
+
+	<select title="{{ v.select.internalName }} / {{ v.select.datatypeid }}"
+	{% if v.select.class %} class="{{ v.select.class }}{% if v.select.error %} inputErreur{% endif %}" {% endif %}
+	{% if v.select.id %} id="{{ v.select.id }}" {% endif %}
+	{% if v.select.name %} name="{{ v.select.name }}" {% endif %}
+	{% if v.select.autocomplete %} autocomplete="{{ v.select.autocomplete }}" {% endif %}
+	{% if v.select.datatypeid %} data-typeid="{{ v.select.datatypeid }}" {% endif %}
+	{% if v.select.disabled %} disabled="{{ v.select.disabled }}" {% endif %}
+	{% if v.select.internalName %} data-internalName="{{ v.select.internalName }}" {% endif %}
+	{% if v.select.tabindex is not empty %} tabindex="{{ v.select.tabindex }}" {% endif %}
+	{{ v.select.add }}>
+	{% for key,options in v.select.values %}
+	 	<optgroup label="{{ key|e('html_attr') }}">
+		{% for k,va in options %}
+			<option
+			{% if v.select.valueDefaut == va.id %} selected="selected" {% endif %}
+			value="{{ va.id|e('html_attr') }}">{{ va.label|e }}
+			</option>
+		{% endfor %}
+		</optgroup>
+	{% endfor %}
+	</select>
+
+	{% if v.select.after %}
+		{{ v.select.after }}
+	{% endif %}
+
+	{% if v.label.helpTxt is not empty %}
+		<small {% if v.select.id %} id="{{ v.select.id }}HelpTxt"{% endif %} class="form-text text-muted">
+			{{ v.label.helpTxt }}
+		</small>
+	{% endif %}
+
+{% endmacro %}
+
+
+{# textarea #}
+{% macro textarea(v) %}
+
+	{% if v.label.label != '' %}
+		<label
+		{% if v.label.class %} class="{{ v.label.class }}" {% endif %}
+		{% if v.textarea.id %} for="{{ v.textarea.id }}" {% endif %}
+		>{{ v.label.label|e }}
+		</label>
+	{% endif %}
+
+	{% if v.textarea.before %}
+		{{ v.textarea.before }}
+	{% endif %}
+
+	<textarea title="{{ v.textarea.internalName }} / {{ v.textarea.datatypeid }}"
+	{% if v.textarea.id %} id="{{ v.textarea.id }}" {% endif %}
+	{% if v.textarea.name %} name="{{ v.textarea.name }}" {% endif %}
+  {% if v.textarea.placeholder %} placeholder="{{ v.textarea.placeholder|e('html_attr') }}" {% endif %}
+	{% if v.textarea.datatypeid %} data-typeid="{{ v.textarea.datatypeid }}" {% endif %}
+	{% if v.textarea.autocomplete %} autocomplete="{{ v.textarea.autocomplete }}" {% endif %}
+	{% if v.textarea.disabled %} disabled="{{ v.textarea.disabled }}" {% endif %}
+	{% if v.textarea.readonly %} readonly="{{ v.textarea.readonly }}" {% endif %}
+	{% if v.textarea.class %} class="{{ v.textarea.class }}{% if v.textareaerror %} textareaErreur{% endif %}" {% endif %}
+	{% if v.textarea.rows %} rows="{{ v.textarea.rows }}" {% endif %}
+	{% if v.textarea.internalName %} data-internalName="{{ v.textarea.internalName }}" {% endif %}
+	{% if v.textarea.tabindex is not empty %} tabindex="{{ v.textarea.tabindex }}" {% endif %}
+	{{ v.textarea.add }}
+
+	>{% if v.textarea.value != 'noPreValue' %}{{ v.textarea.value|e }}{% elseif v.textarea.value == 'noPreValue' and  v.textarea.defaut != '' %}{{ v.textarea.defaut|e }}{% endif %}</textarea>
+
+	{% if v.textarea.after %}
+		{{ v.textarea.after }}
+	{% endif %}
+
+	{% if v.label.helpTxt is not empty %}
+		<small {% if v.textarea.id %} id="{{ v.textarea.id }}HelpTxt"{% endif %} class="form-text text-muted">
+			{{ v.label.helpTxt }}
+		</small>
+	{% endif %}
+
+{% endmacro %}
+
+
+
+
+{# formBuilder #}
+{% macro formbuilder(t , formIN, prevalue ) %}
+	{% import _self as f %}
+	{% if t.global.formCss is defined and t.global.formCss is not empty %}
+		<style>{{ t.global.formCss }}</style>
+	{% endif %}
+	{% if t.global.noFormTags is not defined %}
+		<form
+		{% if t.global.formAction %}action="{{ t.config.protocol }}{{ t.config.host }}{{ t.config.urlHostSuffixe }}{{ t.global.formAction }}" {% endif %}
+		{% if t.global.formMethod %}method="{{ t.global.formMethod }}" {% endif %}
+		id="formName_{{ formIN }}"
+		class="{{ t.global.formClass }}"
+		data-instance="{{ t.global.instance }}" >
+	{% endif %}
+
+
+	{# form autoTitle : name du data_type dont la valeur déterminera le titre de l'objet créé #}
+	{% if t.global.autoTitle %}
+		{{ f.input ({
+			'input' : {
+				'type' : 'hidden',
+				'name' : 'autoTitle',
+				'value' : t.global.autoTitle
+			}
+		}) }}
+	{% endif %}
+
+	{# form autoDate : name du data_type dont la valeur déterminera la date effective (creationDate) de l'objet créé #}
+	{% if t.global.autoDate %}
+		{{ f.input ({
+			'input' : {
+				'type' : 'hidden',
+				'name' : 'autoDate',
+				'value' : t.global.autoDate
+			}
+		}) }}
+	{% endif %}
+
+	{# form name #}
+	{{ f.input ({
+		'input' : {
+			'type' : 'hidden',
+			'name' : 'formIN',
+			'value' : formIN
+		}
+	}) }}
+
+ {# champ cachés #}
+ {% for khc,hc in t.addHidden %}
+ {{ f.input ({
+	 'input' : {
+		 'type' : 'hidden',
+		 'name' : khc,
+		 'value' : hc
+	 }
+ }) }}
+ {% endfor %}
+
+	{% for keyrow, row in t.structure %}
+		<div data-numrow="{{ keyrow }}" class="row{% if row.elements.class %} {{ row.elements.class }}{% endif %}">
+		{% for keycol, col in row %}
+			{% if keycol == "elements" %}
+				{% if col.value is defined %}<div class="col-12"><h3>{{ col.value }}</h3></div>{% endif %}
+			{% else %}
+				<div data-numrow="{{ keyrow }}" data-numcol="{{ keycol }}" class="{{ (col.size|e('html_attr') ~ ' ' ~ col.class|e('html_attr'))|trim() }}">
+					{% for el in col.elements %}
+						{% if el.type == "head" %}
+							<h4 class="my-2">{{ el.value }}</h4>
+						{% elseif el.type == "label" %}
+							<p{% if el.class is not empty %} class="{{ el.class }}"{% endif %}>{{ el.value }}</p>
+						{% elseif el.type == "template" %}
+							{% include el.value ~ '.html.twig' %}
+						{% else %}
+
+
+							{% if el.value.formType in ['text','email','tel','password', 'number', 'range','reset'] %}
+								<div class="form-group">
+								{{ f.input ({
+									'input' : {
+										'type' : el.value.formType,
+										'name' : el.value.name,
+										'id' : 'id_' ~ el.value.internalName ~ '_id',
+										'placeholder' : el.value.placeholder,
+										'class' : 'form-control-sm ' ~ el.value.autocompleteclass ~ el.value.class,
+										'value' : el.value.preValue,
+										'defaut' : el.value.formValues,
+										'required' : el.value.required,
+										'tabindex' : el.value.tabindex,
+										'maxlength' : el.value.maxlength,
+										'disabled' : el.value.disabled,
+										'readonly' : el.value.readonly,
+										'datatypeid' : el.value.id,
+										'autocomplete' : 'off',
+										'dataAcTypeID' : el.value.dataAcTypeID,
+										'min' : el.value.min,
+										'max' : el.value.max,
+										'step' : el.value.step,
+										'plus' : el.value.plus,
+										'plusg' : el.value.plusg,
+										'internalName' : el.value.internalName,
+										'before' : t['before'][el.value.internalName]
+									},
+									'label' : {
+										'label' : el.value.label,
+										'class' : el.value.classLabel,
+										'helpTxt': el.value.helpTxt,
+									}
+								}) }}
+								</div>
+
+								{% elseif el.value.formType == 'hidden' %}
+									{{ f.hidden ({
+										'hidden' : {
+											'type' : 'hidden',
+											'name' : el.value.name,
+											'id' : 'id_' ~ el.value.internalName ~ '_id',
+											'value' : el.value.preValue,
+											'defaut' : el.value.formValues,
+											'datatypeid' : el.value.id,
+											'placeholder' : el.value.placeholder,
+											'autocomplete' : 'off',
+											'dataAcTypeID' : el.value.dataAcTypeID,
+											'internalName' : el.value.internalName,
+										},
+									}) }}
+
+								{% elseif el.value.formType in ['checkbox', 'switch'] %}
+									<div class="form-group">
+									{{ f.input ({
+										'input' : {
+											'type' : el.value.formType,
+											'name' : el.value.name,
+											'id' : 'id_' ~ el.value.internalName ~ '_id',
+											'class' : el.value.autocompleteclass ~ el.value.class,
+											'value' : el.value.preValue,
+											'defaut' : el.value.formValues,
+											'required' : el.value.required,
+											'tabindex' : el.value.tabindex,
+											'disabled' : el.value.disabled,
+											'readonly' : el.value.readonly,
+											'datatypeid' : el.value.id,
+											'internalName' : el.value.internalName,
+											'before' : t['before'][el.value.internalName]
+										},
+										'label' : {
+											'label' : el.value.label,
+											'class' : el.value.classLabel,
+										}
+									}) }}
+									</div>
+
+							{% elseif el.value.formType == "textarea" %}
+								<div class="form-group">
+								{{ f.textarea ({
+									'textarea' : {
+										'name' : el.value.name,
+										'id' : 'id_' ~ el.value.internalName ~ '_id',
+										'class' : 'form-control form-control-sm' ~ el.value.class,
+										'value' : el.value.preValue,
+										'defaut' : el.value.formValues,
+										'tabindex' : el.value.tabindex,
+										'disabled' : el.value.disabled,
+										'datatypeid' : el.value.id,
+										'autocomplete' : 'off',
+										'placeholder' : el.value.placeholder,
+										'readonly' : el.value.readonly,
+										'rows' : el.value.rows,
+										'internalName' : el.value.internalName,
+										'before' : t['before'][el.value.internalName]
+									},
+									'label' : {
+										'label' : el.value.label,
+										'class' : el.value.classLabel,
+										'helpTxt': el.value.helpTxt,
+									}
+								}) }}
+								</div>
+
+							{% elseif el.value.formType == "select" %}
+								<div class="form-group">
+								{{ f.select ({
+									'select' : {
+										'name' : el.value.name,
+										'id' : 'id_' ~ el.value.internalName ~ '_id',
+										'class' : 'custom-select-sm' ~ el.value.class,
+										'values' : el.value.formValues,
+										'valueDefaut' : el.value.preValue,
+										'readonly' : el.value.readonly,
+										'required' : el.value.required,
+										'placeholder' : el.value.placeholder,
+										'tabindex' : el.value.tabindex,
+										'disabled' : el.value.disabled,
+										'datatypeid' : el.value.id,
+										'autocomplete' : 'off',
+										'internalName' : el.value.internalName,
+										'before' : t['before'][el.value.internalName],
+										'plus' : el.value.plus,
+										'plusg' : el.value.plusg
+									},
+									'label' : {
+										'label' : el.value.label,
+										'class' : el.value.classLabel,
+										'helpTxt': el.value.helpTxt,
+									}
+								}) }}
+								</div>
+
+								{% elseif el.value.formType == "radio" %}
+									<div class="form-group">
+									{{ f.radio ({
+										'radio' : {
+											'name' : el.value.name,
+											'id' : 'id_' ~ el.value.internalName ~ '_id',
+											'class' : 'form-control form-control-sm' ~ el.value.class,
+											'values' : el.value.formValues,
+											'valueDefaut' : el.value.preValue,
+											'readonly' : el.value.readonly,
+											'required' : el.value.required,
+											'tabindex' : el.value.tabindex,
+											'disabled' : el.value.disabled,
+											'datatypeid' : el.value.id,
+											'autocomplete' : 'off',
+											'internalName' : el.value.internalName,
+											'before' : t['before'][el.value.internalName]
+										},
+										'label' : {
+											'label' : el.value.label,
+											'class' : el.value.classLabel,
+										}
+									}) }}
+									</div>
+
+							{% elseif el.value.formType == "date" %}
+								<div class="form-group">
+								{{ f.input ({
+									'input' : {
+										'type' : 'text',
+										'name' : el.value.name,
+										'id' : 'id_' ~ el.value.internalName ~ '_id',
+										'placeholder' : el.value.placeholder,
+										'datatypeid' : el.value.id,
+										'autocomplete' : 'off',
+										'min' : el.value.min,
+										'max' : el.value.max,
+										'step' : el.value.step,
+										'tabindex' : el.value.tabindex,
+										'disabled' : el.value.disabled,
+										'readonly' : el.value.readonly,
+										'required' : el.value.required,
+										'class' : 'form-control-sm datepic ' ~ el.value.class,
+										'before' : '<div id="before_'~ el.value.internalName ~ '" class="input-group input-group-sm mx-0 date datepick" data-typeid="'~ el.value.id ~'" data-internalname="'~ el.value.internalName ~'">',
+										'after' : '<div class="input-group-append"><span class="fas fa-calendar input-group-text"></span></div></div>',
+										'value' : el.value.preValue,
+										'defaut' : el.value.formValues,
+										'plusg' : el.value.plusg,
+										'internalName' : el.value.internalName
+									},
+									'label' : {
+										'label' : el.value.label,
+										'class' : el.value.classLabel,
+										'helpTxt': el.value.helpTxt,
+									}
+								}) }}
+								<span id="id_{{ el.value.internalName }}_idHelp" class="help-block"></span>
+								</div>
+
+							{% elseif el.value.formType == "submit" %}
+
+								{{ f.input ({
+									'input' : {
+										'type' : 'submit',
+										'value' : el.value.label,
+										'tabindex' : el.value.tabindex,
+										'disabled' : el.value.disabled,
+										'class' : el.value.class
+									}
+								}) }}
+
+							{% endif %}
+
+
+						{% endif %}
+					{% endfor %}
+				</div>
+			{% endif %}
+		{% endfor %}
+	</div>
+	{% endfor %}
+
+	{% if t.global.noFormTags is not defined %}</form>{% endif %}
+
+{% endmacro %}
+
+{# form errors bloc #}
+{% macro errorFormDiv( validationErrorsMsg, display='', dismiss=true ) %}
+	{% if validationErrorsMsg %}
+	<div class="alert alert-danger alert-dismissible" role="alert" {% if display == 'none' %}style="display: none"{% endif %}>
+		<div class="d-flex align-items-center">
+			<i class="fas fa-exclamation fa-fw fa-3x"></i>
+			<div class="ml-4">
+				Merci de considérer les informations suivantes et de corriger les champs concernés :
+				<ul class="list-style-position-inside my-0 pl-0">
+					{% for message in validationErrorsMsg %}
+				    {% if message %}<li>{{ message }}</li>{% endif %}
+					{% endfor %}
+				</ul>
+			</div>
+		</div>
+		{% if dismiss %}
+			<button type="button" class="close cleanSessionFormWarning" data-dismiss="alert" aria-label="Close">
+				<span aria-hidden="true">&times;</span>
+			</button>
+		{% endif %}
+	</div>
+	{% endif %}
+{% endmacro %}
+
+{# simple ajax form errors bloc #}
+{% macro errorsBloc(dismiss=true) %}
+	<div class="alert alert-danger alert-dismissible d-none cleanAndHideOnModalHide" role="alert">
+		<div class="d-flex align-items-center">
+			<i class="fas fa-exclamation fa-3x"></i>
+			<div class="ml-4">
+				Merci de considérer les informations suivantes et de corriger les champs concernés :
+				<ul class="list-style-position-inside my-0 pl-0">
+				</ul>
+			</div>
+		</div>
+		{% if dismiss %}
+			<button type="button" class="close cleanSessionFormWarning" aria-label="Close">
+				<span aria-hidden="true">&times;</span>
+			</button>
+		{% endif %}
+	</div>
+{% endmacro %}

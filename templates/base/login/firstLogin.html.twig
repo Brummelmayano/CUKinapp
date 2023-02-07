@@ -1,0 +1,49 @@
+{#
+ # This file is part of MedShakeEHR.
+ #
+ # Copyright (c) 2017
+ # fr33z00 <https://github.com/fr33z00>
+ # http://www.medshake.net
+ #
+ # MedShakeEHR is free software: you can redistribute it and/or modify
+ # it under the terms of the GNU General Public License as published by
+ # the Free Software Foundation, either version 3 of the License, or
+ # any later version.
+ #
+ # MedShakeEHR is distributed in the hope that it will be useful,
+ # but WITHOUT ANY WARRANTY; without even the implied warranty of
+ # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ # GNU General Public License for more details.
+ #
+ # You should have received a copy of the GNU General Public License
+ # along with MedShakeEHR.  If not, see <http://www.gnu.org/licenses/>.
+ #/
+
+/##
+ # Template > firstLogin
+ #
+ # @author fr33z00 <https://github.com/fr33z00>
+ # @contrib Bertrand Boutillier <b.boutillier@gmail.com>
+ #}
+
+{% extends "page.html.twig" %}
+{% import "macroForm.html.twig" as f %}
+{% block title %}{{ config.designAppName }} : création admin{% endblock %}
+
+{% block head %}
+{{ parent() }}
+{% endblock %}
+
+{% block body %}
+
+<h3>MedshakeEHR est désormais fonctionnel</h3>
+<div class="alert alert-primary my-4">
+  Nous allons créer le premier utilisateur. Celui-ci aura les droits d'administration qui autorisent à configurer le logiciel et créer des utilisateurs.
+</div>
+{# validation error display bloc #}
+{{ f.errorFormDiv( session['form'][page.formIN]['validationErrorsMsg'] ) }}
+
+{# form display #}
+{{ f.formbuilder(page.form , page.formIN , session) }}
+
+{% endblock %}

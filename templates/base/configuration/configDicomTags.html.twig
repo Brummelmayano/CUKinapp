@@ -1,0 +1,229 @@
+{#
+ # This file is part of MedShakeEHR.
+ #
+ # Copyright (c) 2017
+ # Bertrand Boutillier <b.boutillier@gmail.com>
+ # http://www.medshake.net
+ #
+ # MedShakeEHR is free software: you can redistribute it and/or modify
+ # it under the terms of the GNU General Public License as published by
+ # the Free Software Foundation, either version 3 of the License, or
+ # any later version.
+ #
+ # MedShakeEHR is distributed in the hope that it will be useful,
+ # but WITHOUT ANY WARRANTY; without even the implied warranty of
+ # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ # GNU General Public License for more details.
+ #
+ # You should have received a copy of the GNU General Public License
+ # along with MedShakeEHR.  If not, see <http://www.gnu.org/licenses/>.
+ #/
+
+/##
+ # Template > Config : liste des tags DICOM rencontrés et associés à une data
+ #
+ # @author Bertrand Boutillier <b.boutillier@gmail.com>
+ # @contrib fr33z00 <https://github.com/fr33z00>
+ #}
+
+ {% extends "page.html.twig" %}
+ {% import "macroForm.html.twig" as f %}
+ {% block title %}{{ config.designAppName }} : configuration tags Dicom{% endblock %}
+
+ {% block head %}
+   {{ parent() }}
+   <script defer src="{{ config.protocol }}{{ config.host }}{{ config.urlHostSuffixe }}/js/configuration.js?{{ modules.base }}"></script>
+ {% endblock %}
+
+ {% block body %}
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item">
+        <a href="{{ config.protocol }}{{ config.host }}{{ config.urlHostSuffixe }}/configuration/">Configuration</a>
+    </li>
+    <li class="breadcrumb-item">
+        <a href="{{ config.protocol }}{{ config.host }}{{ config.urlHostSuffixe }}/configuration/#ca">Paramètres avancés</a>
+    </li>
+	  <li class="breadcrumb-item active">
+			  Correspondances DICOM
+	  </li>
+  </ol>
+
+  <h1>Tags DICOM</h1>
+
+
+
+   <table class="table table-sm mt-4">
+     <thead class="thead-light">
+     <tr>
+       <th>Tag</th>
+       <th colspan="2">Type associé</th>
+       <th>Unité</th>
+       <th>Valeur retournée</th>
+       <th>Décimales</th>
+       <th></th>
+     </tr>
+    </thead>
+    <tbody>
+     {% for k,v in page.tags %}
+      <tr class="{% if v.0.typeName|length > 0 or v.1.typeName|length > 0 %}table-success{% else %}table-warning{% endif %}">
+       <td colspan="6" class="font-weight-bold">
+         {{ k }}&nbsp;&nbsp;&nbsp;&nbsp;{{ v.0.dicomCodeMeaning }}
+       </td>
+       <td> <button type="button" data-dicomtag="{{ k }}" data-dicomcodemeaning="{{ v.0.dicomCodeMeaning }}" class="btn btn-light btn-sm float-right m-1 reset-modal mb-4 addtomodaldicom" data-toggle="modal" data-target="#modalNewType">
+        <span class="fas fa-plus" aria-hidden="true"></span>
+        </button></td>
+      </tr>
+     {% for t in v %}
+      {% if t.typeName|length > 0 %}
+      <tr id="typeID  {{ t.typeID }}">
+        <td>&nbsp;
+        </td>
+        <td class="font-weight-bold">
+          {{ t.typeName }}
+        </td>
+        <td>
+          {{ t.label }}{% if t.labelCat %} <small>({{ t.labelCat }})</small>{% endif %}
+        </td>
+        <td>
+          {{ t.dicomUnits }}
+        </td>
+        <td>
+          {{ t.returnValue }}
+        </td>
+        <td>
+          {{ t.roundDecimal }}
+        </td>
+
+        <td class="text-right">
+          <div class="btn-group">
+            <button type="button" class="btn btn-light btn-sm edit-by-prim-key" aria-label="Editer" data-id="{{ t.id }}" data-table="dicomTags" data-form="formModalNewType" data-modal="modalNewType">
+            <span class="fas fa-pencil-alt" aria-hidden="true"></span>
+            </button>
+            <button type="button" class="btn btn-light btn-sm delete-by-prim-key" aria-label="Supprimer" data-id="{{ t.id }}" data-table="dicomTags">
+            <span class="fas fa-times" aria-hidden="true"></span>
+            </button>
+          </div>
+        </td>
+
+
+      </tr>
+      {% endif %}
+     {% endfor %}
+
+     {% endfor %}
+   </tbody>
+   </table>
+
+ {% endblock %}
+
+ {% block modals %}
+   {# modal new type #}
+   <div class="modal fade" id="modalNewType" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+     <div class="modal-dialog" role="document">
+       <div class="modal-content">
+         <div class="modal-header">
+           <h4 class="modal-title font-weight-bold" id="myModalLabel">Création / édition</h4>
+           <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+         </div>
+         <div class="modal-body">
+
+   	  		{{ f.errorsBloc() }}
+
+   			<form id="formModalNewType" action="{{ config.protocol }}{{ config.host }}{{ config.urlHostSuffixe }}/configuration/ajax/configTagDicomCreate/" data-groupe="{{ page.groupe }}">
+   				<div class="form-group">
+   				{{ f.input ({
+   					'input' : {
+   						'type' : 'text',
+   						'name' : 'dicomTag',
+   						'placeholder' : 'tag dicom',
+   						'class' : 'form-control',
+   						'autocomplete' : 'off'
+   					},
+   					'label' : {
+   						'position' : 'before',
+   						'label' : 'Tag DICOM',
+   					}
+   				}) }}
+   				</div>
+
+          <div class="form-group">
+   				{{ f.input ({
+   					'input' : {
+   						'type' : 'text',
+   						'name' : 'dicomCodeMeaning',
+   						'placeholder' : 'tag dicom',
+   						'class' : 'form-control',
+   						'autocomplete' : 'off'
+   					},
+   					'label' : {
+   						'position' : 'before',
+   						'label' : 'Tag DICOM',
+   					}
+   				}) }}
+   				</div>
+
+   				<div class="form-group">
+   				{{ f.input ({
+   					'input' : {
+   						'type' : 'text',
+   						'name' : 'typeName',
+   						'placeholder' : 'typeName',
+   						'class' : 'form-control',
+   						'autocomplete' : 'off'
+   					},
+   					'label' : {
+   						'position' : 'before',
+   						'label' : 'TypeName',
+   					}
+   				}) }}
+   				</div>
+
+   				<div class="form-group">
+   				{{ f.select ({
+   					'select' : {
+   						'name' : 'returnValue',
+   						'class' : 'form-control',
+   						'autocomplete' : 'off',
+   						'values' : {'min' : 'min', 'max' : 'max', 'avg' : 'avg', 'bv' : 'bv', 'defaut' : 'defaut'},
+   						'valueDefaut': ''
+   					},
+   					'label' : {
+   						'position' : 'before',
+   						'label' : 'Valeur retournée',
+   					}
+   				}) }}
+   				</div>
+
+
+   				<div class="form-group">
+   				{{ f.input ({
+   					'input' : {
+   						'type' : 'number',
+   						'name' : 'roundDecimal',
+   						'placeholder' : 'nombre de décimales',
+   						'class' : 'form-control',
+   						'autocomplete' : 'off',
+   						'min' : '0',
+              'max' : '3',
+              'step' : '1'
+   					},
+   					'label' : {
+   						'position' : 'before',
+   						'label' : 'Décimales',
+   					}
+   				}) }}
+   				</div>
+
+   			</form>
+         </div>
+         <div class="modal-footer">
+           <button type="button" class="btn btn-light" data-dismiss="modal">Abandonner</button>
+           <button type="button" class="btn btn-primary modal-save" data-form="formModalNewType" data-modal="modalNewType">Sauvegarder</button>
+         </div>
+       </div>
+     </div>
+   </div>
+
+
+
+   {% endblock %}

@@ -1,0 +1,70 @@
+{#
+ # This file is part of MedShakeEHR.
+ #
+ # Copyright (c) 2017
+ # Bertrand Boutillier <b.boutillier@gmail.com>
+ # http://www.medshake.net
+ #
+ # MedShakeEHR is free software: you can redistribute it and/or modify
+ # it under the terms of the GNU General Public License as published by
+ # the Free Software Foundation, either version 3 of the License, or
+ # any later version.
+ #
+ # MedShakeEHR is distributed in the hope that it will be useful,
+ # but WITHOUT ANY WARRANTY; without even the implied warranty of
+ # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ # GNU General Public License for more details.
+ #
+ # You should have received a copy of the GNU General Public License
+ # along with MedShakeEHR.  If not, see <http://www.gnu.org/licenses/>.
+ #/
+
+/##
+ # Template > patients : résultat recherche patients / pro
+ #
+ # @author Bertrand Boutillier <b.boutillier@gmail.com>
+ # @contrib fr33z00 <https://github.com/fr33z00>
+ # @contrib DEMAREST Maxime <maxime@indelog.fr>
+ #}
+
+{% if page.porp == 'registre' %}
+  {% set porpurl = 'registre' %}
+{% elseif page.porp == 'groupe' %}
+  {% set porpurl = 'groupe' %}
+{% else %}
+  {% set porpurl = page.porp in ['patient', 'today'] ? 'patient' : 'pro' %}
+{% endif %}
+
+<!-- Nobre max de résultat possible pour la recheche courrante -->
+<script>var totalNbOfResultsDisplayed = {{ page.totalNbOfResultsDisplayed }};</script>
+{% if page.outputTableHead %}
+  <table class="table table-sm mb-0 table-hover">
+    {% if page.outputTableRow|length < page.totalNbOfResultsDisplayed %}
+      <caption class="text-center text-danger caption-top">
+        Nombre d'entrées affichées&nbsp:&nbsp<span id="nbResultsDisplayed"></span>/{{ page.totalNbOfResultsDisplayed }}<br>
+        <button class="btn btn-link" onclick="updateListingPatients(true)">Afficher plus de résultats.</button>
+      </caption>
+    {% endif %}
+    <thead class="thead-light">
+      <tr>
+        <th class="d-none d-sm-table-cell"></th>
+        {% for th in page.outputTableHead %}
+          {% if loop.first %}
+            <th class="d-table-cell">{{ th }}</th>
+          {% else %}
+            <th class="d-none d-lg-table-cell">{{ th }}</th>
+          {% endif %}
+        {% endfor %}
+        <th class="d-table-cell"></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% include 'listing-det.html.twig' %}
+    </tbody>
+  </table>
+{% else %}
+  <div class="mt-4 d-flex flex-column align-items-center justify-content-center" style="height: calc(100vh - 500px); min-height: 250px">
+    <div class="mb-3"><i class="fas fa-user-slash fa-10x text-light"></i></div>
+    <div class="text-muted">Pas de résultat correspondant à la recherche.</div>
+  </div>
+{% endif %}

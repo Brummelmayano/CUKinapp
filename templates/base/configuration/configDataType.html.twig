@@ -1,0 +1,567 @@
+{#
+ # This file is part of MedShakeEHR.
+ #
+ # Copyright (c) 2017
+ # Bertrand Boutillier <b.boutillier@gmail.com>
+ # http://www.medshake.net
+ #
+ # MedShakeEHR is free software: you can redistribute it and/or modify
+ # it under the terms of the GNU General Public License as published by
+ # the Free Software Foundation, either version 3 of the License, or
+ # any later version.
+ #
+ # MedShakeEHR is distributed in the hope that it will be useful,
+ # but WITHOUT ANY WARRANTY; without even the implied warranty of
+ # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ # GNU General Public License for more details.
+ #
+ # You should have received a copy of the GNU General Public License
+ # along with MedShakeEHR.  If not, see <http://www.gnu.org/licenses/>.
+ #/
+
+/##
+ # Template > Config : données du modèle de données
+ #
+ # @author Bertrand Boutillier <b.boutillier@gmail.com>
+ # @contrib fr33z00 <https://github.com/fr33z00>
+ #}
+
+{% extends "page.html.twig" %}
+{% import "macroForm.html.twig" as f %}
+{% block title %}{{ config.designAppName }} : configuration{% endblock %}
+
+{% block head %}
+{{ parent() }}
+<script defer src="{{ config.protocol }}{{ config.host }}{{ config.urlHostSuffixe }}/js/configuration.js?{{ modules.base }}"></script>
+{% endblock %}
+
+{% block body %}
+{% set valeurParDefaut='Valeur par défaut' %}
+{% set labelDefaut='Label' %}
+{% set nomUsageInterneDefaut='Nom à usage interne ' %}
+{% set labelFormType='Type&nbsp;formulaire' %}
+
+<ol class="breadcrumb">
+  <li class="breadcrumb-item">
+      <a href="{{ config.protocol }}{{ config.host }}{{ config.urlHostSuffixe }}/configuration/">Configuration</a>
+  </li>
+    <li class="breadcrumb-item">
+      {% if page.groupe == "courrier" %}
+        <a href="{{ config.protocol }}{{ config.host }}{{ config.urlHostSuffixe }}/configuration/#cc">Paramètres courants</a>
+      {% else %}
+        <a href="{{ config.protocol }}{{ config.host }}{{ config.urlHostSuffixe }}/configuration/#ca">Paramètres avancés</a>
+      {% endif %}
+    </li>
+	  <li class="breadcrumb-item active">
+      {% if page.groupe == "admin" %}
+	      Administratives
+      {% elseif page.groupe == "medical" %}
+	      Médicales
+      {% elseif page.groupe == "typecs" %}
+	      Consultations
+      {% elseif page.groupe == "courrier" %}
+	      Courriers et certificats
+	      {% set valeurParDefaut='Courrier : nom du template associé / Mail : texte par défaut' %}
+      {% elseif page.groupe == "mail" %}
+	      Mail
+      {% elseif page.groupe == "doc" %}
+	      Documents importés
+      {% elseif page.groupe == "ordo" %}
+	      Ordonnances
+      {% elseif page.groupe == "reglement" %}
+	      Règlements
+      {% elseif page.groupe == "dicom" %}
+	      Dicom
+      {% elseif page.groupe == "user" %}
+	      Utilisateurs
+      {% elseif page.groupe == "relation" %}
+	      Relations
+      {% endif %}
+	  </li>
+</ol>
+{% if page.groupe == "admin" %}
+	<h1>Types des données administratives</h1>
+{% elseif page.groupe == "medical" %}
+	<h1>Types des données médicales</h1>
+{% elseif page.groupe == "typecs" %}
+	<h1>Types des données de consultations</h1>
+	{% set valeurParDefaut='Nom du formulaire associé' %}
+  {% set labelFormType='Données exportables' %}
+{% elseif page.groupe == "courrier" %}
+	<h1>Types des données courrier</h1>
+	{% set valeurParDefaut='Courrier : nom du template associé / Mail : texte par défaut' %}
+{% elseif page.groupe == "mail" %}
+	<h1>Types des données mail</h1>
+{% elseif page.groupe == "doc" %}
+	<h1>Types des données documents</h1>
+{% elseif page.groupe == "ordo" %}
+	<h1>Types des données ordonnances</h1>
+{% elseif page.groupe == "reglement" %}
+	<h1>Types des données règlements</h1>
+{% elseif page.groupe == "dicom" %}
+	<h1>Types des données Dicom</h1>
+{% elseif page.groupe == "user" %}
+	<h1>Types des données utilisateurs</h1>
+	{% set labelDefaut='Nom de la variable de configuration  (répéter)' %}
+	{% set nomUsageInterneDefaut='Nom de la variable de configuration' %}
+{% elseif page.groupe == "relation" %}
+	<h1>Types des données Relation</h1>
+{% endif %}
+
+
+{# Nav tabs #}
+<ul class="nav nav-tabs mt-3" role="tablist">
+	<li role="presentation" class="nav-item"><a class="nav-link" href="{{ config.protocol }}{{ config.host }}{{ config.urlHostSuffixe }}/configuration/data-cat/{{ page.groupe }}/" aria-controls="categories" role="tab">Catégories</a></li>
+	<li role="presentation" class="nav-item"><a class="nav-link active" href="{{ config.protocol }}{{ config.host }}{{ config.urlHostSuffixe }}/configuration/data-type/{{ page.groupe }}/" aria-controls="types" role="tab">Types</a></li>
+</ul>
+
+{# Tab panes #}
+<div class="tab-content">
+
+	{# type tab #}
+	<div role="tabpanel" class="tab-pane active" id="types">
+
+    <div class="row mt-3">
+      <div class="col text-right">
+        <button type="button" class="btn btn-primary reset-modal" data-toggle="modal" data-target="#modalNewType">
+          <i class="fas fa-plus"></i> Nouveau type
+        </button>
+      </div>
+    </div>
+
+		{% for k,v in page.tabTypes %}
+			<h2 id="cat{{ v.0.cat }}">{{ v.0.catLabel }}
+        <small>
+          <a class="btn btn-light btn-sm" role="button" href="{{ config.protocol }}{{ config.host }}{{ config.urlHostSuffixe }}/configuration/data-type/{{ page.groupe }}/{{ v.0.cat }}/">
+          <span class="fas fa-search" aria-hidden="true"></span>
+          </a>
+        </small>
+      </h2>
+
+      <table class="table table-sm mb-0 table-hover mb-3">
+			<thead class="thead-light">
+			<tr>
+				<th>#</th>
+        <th>Module</th>
+				<th>Nom</th>
+        <th>Label</th>
+        <th>Utilisé</th>
+				{% if page.groupe == "typecs" and config.optionGeActiverRegistres == 'true' %}<th>Registre</th>{% elseif page.groupe not in ["courrier"] %}<th>Validation</th>{% endif %}
+        {% if page.groupe == "typecs" %}<th>Itération possible</th>{% endif %}
+				<th>{{ labelFormType }}</th>
+				<th>Vie</th>
+				<th>Description</th>
+				<th></th>
+			</tr>
+			</thead>
+			<tbody>
+			{% for w in v %}
+				<tr>
+				<td>{{ w.id }}</td>
+        <td>{{ w.module }}</td>
+				<td>{{ w.name }}</td>
+        <td>{{ w.label }}</td>
+				<td>{{ w.enfants }}</td>
+        {% if page.groupe == "typecs" and config.optionGeActiverRegistres == 'true' %}
+        <td>{{ page.registresPossibles[w.validationRules] }}</td>
+				{% elseif page.groupe not in ["courrier"] %}<td>{{ w.validationRules }}</td>{% endif %}
+        {% if page.groupe == "typecs" %}<td>{{ w.validationErrorMsg }}</td>{% endif %}
+				<td>
+          {% if page.groupe == "typecs" and w.formType == 'select' %}
+            oui
+          {% else %}
+            {{ w.formType }}
+          {% endif %}
+        </td>
+				<td>{{ w.durationLife }}</td>
+				<td>{{ w.description }}</td>
+				<td class="text-right">
+          <div class="btn-group">
+					  <button type="button" class="btn btn-light btn-sm edit-by-prim-key" aria-label="Editer" data-id="{{ w.id }}" data-table="data_types" data-form="formModalNewType" data-modal="modalNewType">
+					  <span class="fas fa-pencil-alt" aria-hidden="true"></span>
+					  </button>
+					  <button type="button" class="btn btn-light btn-sm duplicate" aria-label="Editer" data-id="{{ w.id }}" data-table="data_types" data-form="formModalNewType" data-modal="modalNewType">
+					  <span class="fas fa-copy" aria-hidden="true"></span>
+					  </button>
+					  <button type="button" class="btn btn-light btn-sm delete-by-prim-key" aria-label="Supprimer" {% if w.enfants > 0 %}disabled{% endif %} data-id="{{ w.id }}" data-table="data_types">
+					  <span class="fas fa-times" aria-hidden="true"></span>
+					  </button>
+          </div>
+				</td>
+				</tr>
+			{% endfor %}
+			</tbody></table>
+		{% endfor %}
+
+	</div>
+
+</div>
+
+{# modal new type #}
+<div class="modal fade" id="modalNewType" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h4 class="modal-title font-weight-bold" id="myModalLabel">Création / édition type</h4>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+      </div>
+      <div class="modal-body">
+	  	    {{ f.errorsBloc() }}
+			<form id="formModalNewType" action="{{ config.protocol }}{{ config.host }}{{ config.urlHostSuffixe }}/configuration/ajax/configDataTypeCreate/" data-groupe="{{ page.groupe }}">
+				<div class="form-group">
+				{{ f.input ({
+					'input' : {
+						'type' : 'text',
+						'name' : 'name',
+						'id' : 'nameID',
+						'placeholder' : 'nom à usage interne, pas d\'espace, pas d\'accent, pas de caractères spéciaux',
+						'class' : 'form-control',
+						'autocomplete' : 'off'
+					},
+					'label' : {
+						'position' : 'before',
+						'label' : nomUsageInterneDefaut,
+					}
+				}) }}
+				</div>
+
+				<div class="form-group">
+				{{ f.input ({
+					'input' : {
+						'type' : 'text',
+						'name' : 'label',
+						'id' : 'labelID',
+						'placeholder' : 'nom principal',
+						'class' : 'form-control',
+						'autocomplete' : 'off'
+					},
+					'label' : {
+						'position' : 'before',
+						'label' : labelDefaut,
+					}
+				}) }}
+				</div>
+
+				{% if page.groupe not in ["typecs"] %}
+					<div class="form-group">
+					{{ f.input ({
+						'input' : {
+							'type' : 'text',
+							'name' : 'placeholder',
+							'id' : 'placeholderID',
+							'placeholder' : 'je suis moi-même un placeholder !',
+							'class' : 'form-control',
+							'autocomplete' : 'off'
+						},
+						'label' : {
+							'position' : 'before',
+							'label' : 'Placeholder',
+						}
+					}) }}
+					</div>
+				{% endif %}
+
+
+				<div class="form-group">
+				{{ f.input ({
+					'input' : {
+						'type' : 'text',
+						'name' : 'description',
+						'id' : 'descriptionID',
+						'placeholder' : 'description',
+						'class' : 'form-control',
+						'autocomplete' : 'off'
+					},
+					'label' : {
+						'position' : 'before',
+						'label' : 'Description',
+					}
+				}) }}
+				</div>
+
+				<div class="form-group">
+				{{ f.select ({
+					'select' : {
+						'name' : 'cat',
+						'id' : 'catID',
+						'class' : 'form-control',
+						'autocomplete' : 'off',
+						'values' : page.catList,
+						'valueDefaut': ''
+					},
+					'label' : {
+						'position' : 'before',
+						'label' : 'Catégorie',
+					}
+				}) }}
+				</div>
+
+				<div class="form-group">
+				{{ f.input ({
+					'input' : {
+						'type' : 'text',
+						'name' : 'durationLife',
+						'id' : 'durationLifeID',
+						'placeholder' : 'temps en seconde',
+						'class' : 'form-control',
+						'autocomplete' : 'off',
+						'value' : '3600'
+					},
+					'label' : {
+						'position' : 'before',
+						'label' : 'Durée de vie avant remplacement',
+					}
+				}) }}
+			</div>
+
+
+        <div class="form-group">
+        {{ f.select ({
+          'select' : {
+            'name' : 'module',
+            'id' : 'moduleID',
+            'class' : 'form-control',
+            'values' : page.modules ,
+            'autocomplete' : 'off',
+            'valueDefaut': ''
+          },
+          'label' : {
+            'position' : 'before',
+            'label' : 'Module',
+          }
+        }) }}
+        </div>
+
+				{% if page.groupe not in ["typecs", "courrier"] %}
+					<div class="form-group">
+					{{ f.input ({
+						'input' : {
+							'type' : 'text',
+							'name' : 'validationRules',
+							'id' : 'validationRulesID',
+							'placeholder' : 'règle de validation',
+							'class' : 'form-control',
+							'autocomplete' : 'off'
+						},
+						'label' : {
+							'position' : 'before',
+							'label' : 'Règle de validation',
+						}
+					}) }}
+					</div>
+				{% endif %}
+
+				{% if page.groupe not in ["typecs", "courrier"] %}
+					<div class="form-group">
+					{{ f.input ({
+						'input' : {
+							'type' : 'text',
+							'name' : 'validationErrorMsg',
+							'id' : 'validationErrorMsgID',
+							'placeholder' : 'message si erreur à la validation',
+							'class' : 'form-control',
+							'autocomplete' : 'off'
+						},
+						'label' : {
+							'position' : 'before',
+							'label' : 'Message erreur de validation',
+						}
+					}) }}
+					</div>
+				{% endif %}
+
+        {% if page.groupe == "typecs" %}
+					<div class="form-group">
+					{{ f.input ({
+						'input' : {
+							'type' : 'text',
+							'name' : 'validationErrorMsg',
+							'id' : 'validationErrorMsgID',
+							'placeholder' : '',
+							'class' : 'form-control',
+							'autocomplete' : 'off'
+						},
+						'label' : {
+							'position' : 'before',
+							'label' : 'Nombre maximal d\'itérations',
+						}
+					}) }}
+					</div>
+				{% endif %}
+
+        {% if page.groupe == "typecs" and config.optionGeActiverRegistres == 'true' %}
+					<div class="form-group">
+					{{ f.select ({
+            'select' : {
+              'name' : 'validationRules',
+              'id' : 'validationRulesID',
+              'class' : 'custom-select',
+              'values' : page.registresPossibles ,
+              'autocomplete' : 'off',
+              'valueDefaut': ''
+            },
+						'label' : {
+							'position' : 'before',
+							'label' : 'Registre concerné',
+						}
+					}) }}
+					</div>
+        {% endif %}
+
+        {% if page.groupe == "courrier" %}
+					<div class="form-group">
+					{{ f.input ({
+						'input' : {
+							'type' : 'text',
+							'name' : 'validationRules',
+							'id' : 'validationRulesID',
+							'placeholder' : 'id utilisateur séparés par des virgules',
+							'class' : 'form-control',
+							'autocomplete' : 'off'
+						},
+						'label' : {
+							'position' : 'before',
+							'label' : 'Spécifique aux utilisateurs',
+						}
+					}) }}
+					</div>
+
+					<div class="form-group">
+					{{ f.input ({
+						'input' : {
+							'type' : 'text',
+							'name' : 'validationErrorMsg',
+							'id' : 'validationErrorMsgID',
+							'placeholder' : 'id utilisateur séparés par des virgules',
+							'class' : 'form-control',
+							'autocomplete' : 'off'
+						},
+						'label' : {
+							'position' : 'before',
+							'label' : 'Exclu aux utilisateurs',
+						}
+					}) }}
+					</div>
+				{% endif %}
+
+
+				{% if page.groupe not in ["typecs", "courrier"] %}
+					<div class="form-group">
+					{{ f.select ({
+						'select' : {
+							'name' : 'formType',
+							'id' : 'formTypeID',
+							'placeholder' : 'type de formulaire',
+							'class' : 'custom-select',
+              'values' : page.typesPossibles ,
+							'autocomplete' : 'off',
+              'valueDefaut': ''
+						},
+						'label' : {
+							'position' : 'before',
+							'label' : 'Type de formulaire',
+						}
+					}) }}
+					</div>
+        {% elseif page.groupe == "typecs" %}
+          <div class="form-group">
+          {{ f.select ({
+            'select' : {
+              'name' : 'formType',
+              'id' : 'formTypeID',
+              'placeholder' : 'type de formulaire',
+              'class' : 'custom-select',
+              'values' : {'' : 'non', 'select' : 'oui'} ,
+              'autocomplete' : 'off',
+              'valueDefaut': ''
+            },
+            'label' : {
+              'position' : 'before',
+              'label' : 'Export des données générées',
+            }
+          }) }}
+          </div>
+				{% endif %}
+
+        {% if page.groupe == "typecs" %}
+          <div class="form-group">
+          {{ f.select ({
+              'select' : {
+                'name' : 'placeholder',
+                'id' : 'placeholderID',
+                'class' : 'custom-select',
+                'values' : {'n': 'non', 'o': 'oui'} ,
+                'autocomplete' : 'off',
+                'valueDefaut': ''
+              },
+            'label' : {
+              'position' : 'before',
+              'label' : 'Peut être envoyé à la signature patient',
+            }
+          }) }}
+          </div>
+        {% endif %}
+
+				{% if page.groupe == "typecs" %}
+					<div class="form-group">
+						{{ f.input ({
+							'input' : {
+								'type' : 'text',
+								'name' : 'formValues',
+								'id' : 'formValuesID',
+								'class' : 'form-control',
+								'autocomplete' : 'off'
+							},
+							'label' : {
+								'position' : 'before',
+								'label' : valeurParDefaut,
+							}
+						}) }}
+					</div>
+				{% else %}
+					<div class="form-group">
+					{{ f.textarea ({
+						'textarea' : {
+							'name' : 'formValues',
+							'id' : 'formValuesID',
+							'placeholder' : 'valeurs par défaut',
+							'class' : 'form-control',
+							'autocomplete' : 'off'
+						},
+						'label' : {
+							'position' : 'before',
+							'label' : valeurParDefaut,
+						}
+					}) }}
+					</div>
+				{% endif %}
+
+				<div class="form-group">
+				{{ f.input ({
+					'input' : {
+						'type' : 'number',
+						'name' : 'displayOrder',
+						'id' : 'displayOrderID',
+						'placeholder' : 'ordre d\'affichage',
+						'class' : 'form-control',
+						'autocomplete' : 'off',
+						'value' : '1',
+					},
+					'label' : {
+						'position' : 'before',
+						'label' : 'Ordre d\'affichage',
+					}
+				}) }}
+				</div>
+
+			</form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-light" data-dismiss="modal">Abandonner</button>
+        <button type="button" class="btn btn-primary modal-save" data-form="formModalNewType" data-modal="modalNewType">Sauvegarder</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

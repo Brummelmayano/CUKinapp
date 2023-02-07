@@ -1,0 +1,173 @@
+{#
+ # This file is part of MedShakeEHR.
+ #
+ # Copyright (c) 2017
+ # Bertrand Boutillier <b.boutillier@gmail.com>
+ # http://www.medshake.net
+ #
+ # MedShakeEHR is free software: you can redistribute it and/or modify
+ # it under the terms of the GNU General Public License as published by
+ # the Free Software Foundation, either version 3 of the License, or
+ # any later version.
+ #
+ # MedShakeEHR is distributed in the hope that it will be useful,
+ # but WITHOUT ANY WARRANTY; without even the implied warranty of
+ # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ # GNU General Public License for more details.
+ #
+ # You should have received a copy of the GNU General Public License
+ # along with MedShakeEHR.  If not, see <http://www.gnu.org/licenses/>.
+ #/
+
+/##
+ # Template > people : créer un patient / pro
+ #
+ # @author Bertrand Boutillier <b.boutillier@gmail.com>
+ # @contrib fr33z00 <https://github.com/fr33z00>
+ #}
+
+{% extends "page.html.twig" %}
+{% import "macroForm.html.twig" as f %}
+{% block title %}{{ config.designAppName }} :
+{% if page.porp == 'patient'%}
+patient
+{% elseif page.porp == 'pro' %}
+praticien
+{% elseif page.porp == 'groupe' %}
+groupe
+{% elseif page.porp == 'registre' %}
+registre
+{% endif %}
+{% endblock %}
+
+{% block jsFiles %}
+{{ parent() }}
+<script defer src="{{ config.protocol }}{{ config.host }}{{ config.urlHostSuffixe }}/js/people.js?{{ modules.base }}"></script>
+{% if config.optionGeActiverVitaleLecture =='true' %}
+	<script defer src="{{ config.protocol }}{{ config.host }}{{ config.urlHostSuffixe }}/js/vitale_functions.js?{{ modules.base }}"></script>
+{% endif %}
+{% endblock %}
+
+{% block jsEmbed %}
+	{{ parent() }}
+
+	$(document).ready(function() {
+
+		$("#id_lastname_id, #id_birthname_id, #id_firstname_id, #id_groupname_id").typeWatch({
+			wait: 1000,
+			highlight: false,
+			allowSubmit: false,
+			captureLength: 1,
+			callback: function(value) {
+				searchSimilarPeople();
+			}
+		});
+	});
+
+	function searchSimilarPeople() {
+	  $.ajax({
+	    url: urlBase + '/patients/ajax/peopleSimilarSearch/',
+	    type: 'post',
+	    data: $(".searchSimilar form").serialize(),
+	    dataType: "json",
+	    success: function(data) {
+				showSimilar(data);
+	    },
+	    error: function() {}
+	  });
+	}
+
+	function showSimilar(data) {
+		str = '';
+		if (data.length > 0) {
+			str = '<div class="card"> \
+		  	<div class="card-header font-weight-bold"> \
+		    	{{ page.porp|capitalize }}s similaires existants \
+		  	</div> \
+		  	<div class="list-group list-group-flush"> ';
+
+			$.each(data, function(index, value) {
+    		str += '<a href="'+ urlBase + '/' + value.type + '/' + value.id + '/' + '" target="_blank" class="list-group-item list-group-item-action"><i class="fas fa-external-link-alt mr-3"></i>' + value.label + '</a>';
+			});
+
+	  	str += '</div> \
+				</div>';
+		}
+		$('#peopleSim').html(str);
+	}
+
+{% endblock %}
+
+{% block body %}
+
+<h1>
+{% if page.porp == 'patient'%}
+Nouveau patient
+{% elseif page.porp == 'pro' %}
+Nouveau praticien
+{% elseif page.porp == 'groupe' %}
+Nouveau groupe
+{% elseif page.porp == 'registre' %}
+Nouveau registre
+{% endif %}
+</h1>
+
+{% if page.porp == 'patient' and config.optionGeActiverVitaleLecture =='true' %}
+<div class="row mb-3">
+	<div class="col">
+		<button type="button" class="btn btn-success lireCpsVitale"><i class="fas fa-user"></i> Vitale</button>
+	</div>
+</div>
+{% endif %}
+
+{% if session['form'][page.formIN]['validationErrorsMsg'] %}
+<div class="row">
+	<div class="col-xl-8 col-12">
+		{{ f.errorFormDiv( session['form'][page.formIN]['validationErrorsMsg']) }}
+	</div>
+</div>
+{% endif %}
+
+{% if page.createFromDropbox == 1 %}
+<div class="row">
+	<div class="col-xl-8 col-12">
+        <div class="alert alert-info" role="alert">
+            <h4>Patient crée à partir des informations présentent dans le nom d'un fichier de la boîte de dépot :</h4>
+            <ul class="list-unstyled">
+                <li><strong>Boîte de dépot : </strong>{{ page.form.addHidden.dropboxBox }}</li>
+                <li><strong>Nom du fichier : </strong>{{ page.form.addHidden.dropboxFilename }}</li>
+                <li><strong>Titre du document : </strong>{{ page.form.addHidden.dropboxDocTitle }}</li>
+            </ul>
+            <p><u>Le fichier sera automatiquement ajouté au dossier du patient et supprimé de la boîte de dépot.</u></p>
+        </div>
+	</div>
+</div>
+{% endif %}
+
+<div class="row">
+	<div class="col-xl-8 col-12">
+		<div class="card bg-light card-body checkboxFixValue searchSimilar">
+			{{ f.formbuilder(page.form , page.formIN , session) }}
+		</div>
+		{% if page['formJavascript'][page.formIN] is not empty %}
+			<script>
+			 {{ page['formJavascript'][page.formIN] }}
+			</script>
+		{% endif %}
+	</div>
+
+	<div id="peopleSim" class="col-xl-4 col-12">
+	</div>
+</div>
+
+{% endblock %}
+
+
+{% block modals %}
+
+{# modal résultat lecture CPS Vitale  #}
+{% if config.optionGeActiverVitaleLecture =='true' %}
+	{% include 'inc-modalLectureCpsVitale.html.twig' %}
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,89 @@
+{#
+ # This file is part of MedShakeEHR.
+ #
+ # Copyright (c) 2017
+ # Bertrand Boutillier <b.boutillier@gmail.com>
+ # http://www.medshake.net
+ #
+ # MedShakeEHR is free software: you can redistribute it and/or modify
+ # it under the terms of the GNU General Public License as published by
+ # the Free Software Foundation, either version 3 of the License, or
+ # any later version.
+ #
+ # MedShakeEHR is distributed in the hope that it will be useful,
+ # but WITHOUT ANY WARRANTY; without even the implied warranty of
+ # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ # GNU General Public License for more details.
+ #
+ # You should have received a copy of the GNU General Public License
+ # along with MedShakeEHR.  If not, see <http://www.gnu.org/licenses/>.
+ #/
+
+/##
+ # Template > dicom : voir tous les examens d'un patient
+ #
+ # @author Bertrand Boutillier <b.boutillier@gmail.com>
+ # @contrib fr33z00 <https://github.com/fr33z00>
+ #}
+{% import "macroForm.html.twig" as f %}
+
+<div class="row mb-4">
+  <div class="col-10 pl-0">
+    <span class="mr-2">Préparer une acquisition</span>
+    <button class="btn btn-outline-secondary prepareEcho mr-2" title="Préparer l'acquisition d'images pour ce patient via un appareil d'examen">
+      <i class="fas fa-radiation fa-lg fa-fw"></i> Appareil
+    </button>
+    {% if config.optionGeActiverPhonecapture == 'true' %}
+      <button class="btn btn-outline-secondary prepareReceptionDoc dicom" title="Préparer l'acquisition d'images pour ce patient via phonecapture">
+        <i class="fas fa-mobile-alt fa-lg fa-fw"></i> Phonecapture
+      </button>
+    {% endif %}
+
+  </div>
+    <div class="col-2 text-right pr-0">
+      <button class="btn btn-outline-secondary tabDicomRefresh" title="Rafraîchir la liste"><i class="fas fa-sync-alt"></i> Rafraîchir</button>
+    </div>
+
+</div>
+
+{% if not page.studiesDcData %}
+  <div class="mt-4 d-flex flex-column align-items-center justify-content-center" style="height: calc(100vh - 350px); min-height: 250px">
+    <div class="mb-3"><i class="fas fa-portrait fa-10x text-light"></i></div>
+    <div class="text-muted">Aucune étude référencée pour ce patient.</div>
+  </div>
+{% else %}
+  <div class="row">
+    <div class="col-12 px-0">
+        <table id="listeExamens" class="table table-sm table-striped table-hover">
+          <thead class="thead-light">
+            <th></th>
+            <th>Date</th>
+            <th>Opérateur</th>
+            <th>Description</th>
+            <th>Acte correspondant</th>
+          </thead>
+          <tbody>
+            {% for v in page.studiesDcData %}
+              <tr data-study="{{ v.ID }}" class="viewStudy" style="cursor: pointer">
+                <td>
+                  <button class="btn btn-outline-secondary btn-sm"  role="button">
+                    <span class="far fa-images" aria-hidden="true"></span>
+                  </buttom>
+                </td>
+                <td>{{ v.Datetime|date('d/m/Y - H:i') }}</td>
+                <td>{{ v.MainDicomTags.ReferringPhysicianName }}</td>
+                <td>{{ v.MainDicomTags.StudyDescription }}</td>
+                <td>{{ page['studiesDcDataRapro'][v.ID]['label'] }}
+                  {% if page['studiesDcDataRapro'][v.ID]['titre'] %}
+                    :
+                    {{ page['studiesDcDataRapro'][v.ID]['titre'] }}
+                    <small>({{ page['studiesDcDataRapro'][v.ID]['creationDate']|date('d/m/Y H:i') }})</small>
+                  {% endif %}
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+{% endif %}

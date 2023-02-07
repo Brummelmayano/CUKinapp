@@ -1,0 +1,96 @@
+{#
+ # This file is part of MedShakeEHR.
+ #
+ # Copyright (c) 2017
+ # Bertrand Boutillier <b.boutillier@gmail.com>
+ # http://www.medshake.net
+ #
+ # MedShakeEHR is free software: you can redistribute it and/or modify
+ # it under the terms of the GNU General Public License as published by
+ # the Free Software Foundation, either version 3 of the License, or
+ # any later version.
+ #
+ # MedShakeEHR is distributed in the hope that it will be useful,
+ # but WITHOUT ANY WARRANTY; without even the implied warranty of
+ # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ # GNU General Public License for more details.
+ #
+ # You should have received a copy of the GNU General Public License
+ # along with MedShakeEHR.  If not, see <http://www.gnu.org/licenses/>.
+ #/
+
+/##
+ # Template > patient : dossier patient
+ #
+ # @author Bertrand Boutillier <b.boutillier@gmail.com>
+ # @contrib fr33z00 <https://github.com/fr33z00>
+ #}
+
+{% extends "patientBase.html.twig" %}
+
+{% block jsFiles %}
+  {{ parent() }}
+  {# JS commun au formulaire de consultation du module #}
+  <script defer="defer" src="{{ config.protocol }}{{ config.host }}{{ config.urlHostSuffixe }}/js/module/commonBase.js?{{ modules.base }}"></script>
+{% endblock %}
+
+{% block body %}
+    {{ parent() }}
+
+    {# Onglets #}
+    <ul class="nav nav-tabs font-weight-bold my-3 text-uppercase">
+      <li class="nav-item">
+        <a id="ongletDossierMedical" class="nav-link active" href="#tabDossierMedical" aria-controls="tabDossierMedical" aria-selected="true" role="tab" data-toggle="tab" accesskey="{% set ak = ak + 1 %}{{ ak }}"><i class="fas fa-notes-medical fa-lg mr-2"></i>Dossier médical</a>
+      </li>
+      <li class="nav-item">
+        <a id="ongletBio" class="nav-link" href="#tabBio" data-toggle="tab" accesskey="{% set ak = ak + 1 %}{{ ak }}"><i class="fas fa-vial fa-lg mr-2"></i>Biologie</a>
+      </li>
+      <li class="nav-item">
+        <a id="ongletGraph" class="nav-link" href="#tabGraph" aria-controls="tabGraph" aria-selected="true" role="tab" data-toggle="tab" accesskey="{% set ak = ak + 1 %}{{ ak }}"><i class="fas fa-chart-line fa-lg mr-2"></i>Biométrie</a>
+      </li>
+      {% if config.optionGeActiverLapInterne == 'true' %}
+      <li class="nav-item">
+        <a id="ongletLAP" class="nav-link" href="#tabLAP" aria-controls="tabLAP" aria-selected="false" role="tab" data-toggle="tab" accesskey="{% set ak = ak + 1 %}{{ ak }}"><i class="fas fa-pills fa-lg mr-2"></i>LAP</a>
+      </li>
+      {% endif %}
+      {% if config.dicomHost != '' %}
+        <li class="nav-item">
+          <a id="ongletDicom" class="nav-link" href="#tabDicom" aria-controls="tabDicom" aria-selected="false" role="tab" data-toggle="tab" accesskey="{% set ak = ak + 1 %}{{ ak }}"><i class="far fa-images fa-lg mr-2"></i>Imagerie</a>
+        </li>
+      {% endif %}
+      <li class="nav-item">
+        <a id="ongletLiensPatient" class="nav-link" href="#tabLiensPatient" aria-controls="tabLiensPatient" aria-selected="false" role="tab" data-toggle="tab" accesskey="{% set ak = ak + 1 %}{{ ak }}"><i class="fas fa-link fa-lg mr-2"></i>Liens du patient</a>
+      </li>
+    </ul>
+
+    {# tabs  #}
+    <div class="tab-content container-fluid">
+
+      {# tab dossier médical #}
+      <div id="tabDossierMedical" class="tab-pane active" role="tabpanel">
+        {% include('inc-patientTabDossierMedical.html.twig') %}
+      </div>
+
+      {# tab Bio #}
+      <div id="tabBio" class="tab-pane" role="tabpanel" data-rootUrl="/patient/{{ page.patient.id }}/tab/tabBio/"></div>
+
+      {# tab Graphiques #}
+      <div id="tabGraph" class="tab-pane" role="tabpanel">
+        {% include('inc-patientTabGraphsIMC.html.twig') %}
+      </div>
+
+      {# tab lap #}
+      {% if config.optionGeActiverLapInterne == 'true' %}
+      <div id="tabLAP" class="tab-pane" role="tabpanel">
+        {% include('inc-tabLAP.html.twig') %}
+      </div>
+      {% endif %}
+
+      {# tab dicom #}
+      <div id="tabDicom" class="tab-pane" role="tabpanel" data-rootUrl="/patient/{{ page.patient.id }}/tab/tabDicomStudiesList/"></div>
+
+      {# tab liens patient #}
+      <div id="tabLiensPatient" class="tab-pane" role="tabpanel" data-rootUrl="/patient/{{ page.patient.id }}/tab/tabLiensPatient/"></div>
+    </div>
+
+{% endblock %}

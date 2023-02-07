@@ -1,0 +1,98 @@
+{#
+ # This file is part of MedShakeEHR.
+ #
+ # Copyright (c) 2017
+ # fr33z00 <https://github.com/fr33z00>
+ # http://www.medshake.net
+ #
+ # MedShakeEHR is free software: you can redistribute it and/or modify
+ # it under the terms of the GNU General Public License as published by
+ # the Free Software Foundation, either version 3 of the License, or
+ # any later version.
+ #
+ # MedShakeEHR is distributed in the hope that it will be useful,
+ # but WITHOUT ANY WARRANTY; without even the implied warranty of
+ # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ # GNU General Public License for more details.
+ #
+ # You should have received a copy of the GNU General Public License
+ # along with MedShakeEHR.  If not, see <http://www.gnu.org/licenses/>.
+ #/
+
+/##
+ # Template > Config : liste des tâches planifiées
+ #
+ # @author fr33z00 <https://github.com/fr33z00>
+ #}
+
+{% extends "page.html.twig" %}
+{% import "macroForm.html.twig" as f %}
+{% block title %}{{ config.designAppName }} : configuration{% endblock %}
+
+{% block head %}
+  {{ parent() }}
+  <style>
+    .leftcell {vertical-align:middle !important;text-align:center;border-right:1px solid #ddd;}
+  </style>
+  <script defer src="{{ config.protocol }}{{ config.host }}{{ config.urlHostSuffixe }}/js/configuration.js?{{ modules.base }}"></script>
+{% endblock %}
+
+{% block body %}
+
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item">
+        <a href="{{ config.protocol }}{{ config.host }}{{ config.urlHostSuffixe }}/configuration/">Configuration</a>
+    </li>
+    <li class="breadcrumb-item">
+        <a href="{{ config.protocol }}{{ config.host }}{{ config.urlHostSuffixe }}/configuration/#cc">Paramètres courants</a>
+    </li>
+		<li class="breadcrumb-item active">
+				Tâches planifiées
+		</li>
+  </ol>
+
+  <h1>Liste des tâches planifiées</h1>
+
+  <form id="formCrons" class="ajaxForm" action="{{ config.protocol }}{{ config.host }}{{ config.urlHostSuffixe }}/configuration/ajax/configCronJobs/" method="post">
+    <table class="table table-sm mb-0 table-hover  table-striped">
+      <thead>
+        <tr>
+          <th>Nom</th>
+          <th>Active</th>
+          <th>Minutes</th>
+          <th>Heures</th>
+          <th>Mois</th>
+          <th>Jours du mois</th>
+          <th>Jours de la semaine</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for k,v in page.availableCrons %}
+          <tr>
+              <td rowspan="2" class="leftcell">{{ v.task }}</td>
+              <td colspan="6">{{ v.description }}</td>
+          </tr>
+          <tr>
+            {% if v.values %}
+              <td class="text-center checkboxFixValue"><input type="checkbox" name="p_a{{ k }}" value="true" checked /></td>
+              <td><input class="form-control form-control-sm" type="text" name="p_m{{ k }}" value="{{ v.values.m }}" /></td>
+              <td><input class="form-control form-control-sm" type="text" name="p_h{{ k }}" value="{{ v.values.h }}" /></td>
+              <td><input class="form-control form-control-sm" type="text" name="p_M{{ k }}" value="{{ v.values.M }}" /></td>
+              <td><input class="form-control form-control-sm" type="text" name="p_dom{{ k }}" value="{{ v.values.dom }}" /></td>
+              <td><input class="form-control form-control-sm" type="text" name="p_dow{{ k }}" value="{{ v.values.dow }}" /></td>
+            {% else %}
+              <td class="text-center checkboxFixValue"><input type="checkbox" name="p_a{{ k }}" value="" /></td>
+              <td><input class="form-control form-control-sm" type="text" name="p_m{{ k }}" value="{{ v.defaults.m }}" /></td>
+              <td><input class="form-control form-control-sm" type="text" name="p_h{{ k }}" value="{{ v.defaults.h }}" /></td>
+              <td><input class="form-control form-control-sm" type="text" name="p_M{{ k }}" value="{{ v.defaults.M }}" /></td>
+              <td><input class="form-control form-control-sm" type="text" name="p_dom{{ k }}" value="{{ v.defaults.dom }}" /></td>
+              <td><input class="form-control form-control-sm" type="text" name="p_dow{{ k }}" value="{{ v.defaults.dow }}" /></td>
+            {% endif %}
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <button type="submit" class="btn btn-primary mt-3">Enregistrer</button>
+  </form>
+
+{% endblock %}
